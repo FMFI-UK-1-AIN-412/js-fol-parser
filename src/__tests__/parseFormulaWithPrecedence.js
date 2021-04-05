@@ -298,33 +298,39 @@ describe('nested strict formula parsing (256 randomly generated formulas)',
   }
 )
 
-describe('very deep, right-parenthesized clause', () => {
-  test('...', () => {
-    let deepIn = 'p(c)';
-    let deepOut = 'p(c:c)';
-    for (let i = 0; i < 10; i++) {
-      deepIn = `(p(c)∨${deepIn})`;
-      deepOut = `(p(c:c)∨${deepOut})`;
+describe('deep right-parenthesized formulas', () => {
+  test.each(['∧', '∨', '→', '↔︎'])(
+    `deep right-parenthesized formula with %s`,
+    (con) => {
+      let deepIn = 'p(c)';
+      let deepOut = 'p(c:c)';
+      for (let i = 0; i < 15; i++) {
+        deepIn = `(p(c)${con}${deepIn})`;
+        deepOut = `(p(c:c)${con}${deepOut})`;
+      }
+      expect(parse(deepIn)).toBe(deepOut);
     }
-    expect(parse(deepIn)).toBe(deepOut);
-  });
+  );
 })
 
-describe('very deep, left-parenthesized clause', () => {
-  test('...', () => {
-    let deepIn = 'p(c)';
-    let deepOut = 'p(c:c)';
-    for (let i = 0; i < 10; i++) {
-      deepIn = `(${deepIn}∨p(c))`;
-      deepOut = `(${deepOut}∨p(c:c))`;
+describe('deep left-parenthesized formulas', () => {
+  test.each(['∧', '∨', '→', '↔︎'])(
+    `deep left-parenthesized formula with %s`,
+    (con) => {
+      let deepIn = 'p(c)';
+      let deepOut = 'p(c:c)';
+      for (let i = 0; i < 15; i++) {
+        deepIn = `(${deepIn}${con}p(c))`;
+        deepOut = `(${deepOut}${con}p(c:c))`;
+      }
+      expect(parse(deepIn)).toBe(deepOut);
     }
-    expect(parse(deepIn)).toBe(deepOut);
+  );
+})
+  
+describe('deep fully right-parenthesized formula in DNF', () => {
+  test('...', () => {
+    expect(parse(`((p(1)&&q(aConstant))∨((p(c)&&q(aConstant))∨((p(c)&&q(aConstant))∨((p(1)&&q(aConstant))∨((p(1)&&q(aConstant))∨((p(c)&&q(aConstant))∨((p(c)&&q(aConstant))∨((p(1)&&q(aConstant))∨((p(1)&&q(aConstant))∨((p(c)&&q(aConstant))∨(((p(c)&&q(aConstant))∨(p(1)&&q(aConstant))))))))))))))`))
+      .toBe(`((p(c:1)∧q(c:aConstant))∨((p(c:c)∧q(c:aConstant))∨((p(c:c)∧q(c:aConstant))∨((p(c:1)∧q(c:aConstant))∨((p(c:1)∧q(c:aConstant))∨((p(c:c)∧q(c:aConstant))∨((p(c:c)∧q(c:aConstant))∨((p(c:1)∧q(c:aConstant))∨((p(c:1)∧q(c:aConstant))∨((p(c:c)∧q(c:aConstant))∨((p(c:c)∧q(c:aConstant))∨(p(c:1)∧q(c:aConstant)))))))))))))`);
   });
 })
-
-// describe('very deep, fully right-parenthesized formula in DNF', () => {
-//   test('...', () => {
-//     expect(parse(`((pozicia(barman)&&zamestnanec(Ema))∨((pozicia(casnik)&&zamestnanec(Ema))∨((pozicia(upratovacka)&&zamestnanec(Ema))∨((pozicia(vyhadzovac)&&zamestnanec(Ema))∨((pozicia(barman)&&zamestnanec(Fero))∨((pozicia(casnik)&&zamestnanec(Fero))∨((pozicia(upratovacka)&&zamestnanec(Fero))∨((pozicia(vyhadzovac)&&zamestnanec(Fero))∨((pozicia(barman)&&zamestnanec(Gigi))∨((pozicia(casnik)&&zamestnanec(Gigi))∨(((pozicia(upratovacka)&&zamestnanec(Gigi))∨(pozicia(vyhadzovac)&&zamestnanec(Gigi))))))))))))))`))
-//       .toBe(`((pozicia(c:barman)∧zamestnanec(c:Ema))∨((pozicia(c:casnik)∧zamestnanec(c:Ema))∨((pozicia(c:upratovacka)∧zamestnanec(c:Ema))∨((pozicia(c:vyhadzovac)∧zamestnanec(c:Ema))∨((pozicia(c:barman)∧zamestnanec(c:Fero))∨((pozicia(c:casnik)∧zamestnanec(c:Fero))∨((pozicia(c:upratovacka)∧zamestnanec(c:Fero))∨((pozicia(c:vyhadzovac)∧zamestnanec(c:Fero))∨((pozicia(c:barman)∧zamestnanec(c:Gigi))∨((pozicia(c:casnik)∧zamestnanec(c:Gigi))∨((pozicia(c:upratovacka)∧zamestnanec(c:Gigi))∨(pozicia(c:vyhadzovac)∧zamestnanec(c:Gigi)))))))))))))`);
-//   });
-// })

@@ -101,21 +101,31 @@ FormulaWithPrecedence
     = WS f:ImplicativeFormula WS { return f }
 
 ImplicativeFormula
-    = left:DisjunctiveFormula WS
-        ImplicationSymbol WS right:ImplicativeFormula
-        { return factories.implication(left, right, ee) }
-    / EquivalenceFormula
+    = left:DisjunctiveFormula WS icase:ImplicativeCases
+        { return icase(left) }
 
-EquivalenceFormula
-    = left:DisjunctiveFormula
-            WS EquivalenceSymbol WS right:EquivalenceFormula
-        { return factories.equivalence(left, right, ee) }
-    / DisjunctiveFormula
+ImplicativeCases
+    = ImplicationSymbol WS right:ImplicativeFormula
+        { return (left) => factories.implication(left, right, ee) }
+    / EquivalencesRight
+    / '' { return (left) => left; }
+
+EquivalencesRight
+    = rights:(
+            EquivalenceSymbol WS right:DisjunctiveFormula WS
+            { return right }
+        )+
+        {
+            return (left) =>
+                [left,...rights].reduceRight((equivs, left) =>
+                    factories.equivalence(left, equivs, ee)
+                )
+        }
 
 DisjunctiveFormula
-    = leftmost:ConjunctiveFormula
+    = leftmost:ConjunctiveFormula WS
         rights:(
-            WS DisjunctionSymbol WS right:ConjunctiveFormula
+            DisjunctionSymbol WS right:ConjunctiveFormula WS
                 { return right }
         )*
         {
@@ -126,9 +136,9 @@ DisjunctiveFormula
         }
 
 ConjunctiveFormula
-    = leftmost:UnaryFormula
+    = leftmost:UnaryFormula WS
         rights:(
-            WS ConjunctionSymbol WS right:UnaryFormula
+            ConjunctionSymbol WS right:UnaryFormula WS
                 { return right }
         )*
         {
@@ -162,15 +172,18 @@ Literal
         { return factories.literal(false, pa.predicate, pa.arguments, ee) }
 
 Clause
-    = WS EmptyClause WS
+    = WS c:ClauseCases { return c }
+
+ClauseCases
+    = EmptyClause WS
         { return factories.clause([], ee) }
-    / WS lits:ClauseLiterals WS
+    / lits:ClauseLiterals WS
         { return factories.clause(lits, ee) }
 
 ClauseLiterals
-    = leftmost:PrimaryClause
+    = leftmost:PrimaryClause WS
         rights:(
-            WS (DisjunctionSymbol / ",") WS right:PrimaryClause
+            (DisjunctionSymbol / ",") WS right:PrimaryClause WS
                 { return right }
         )*
         { return [leftmost,...rights].flat() }

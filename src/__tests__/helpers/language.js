@@ -14,6 +14,7 @@ export const functions = new Set(_functions.keys())
 
 const _predicates = new Map(Object.entries({
   'p': 1,
+  'q': 1,
   'Q': 2,
   'aPredicate': 5
 }))
