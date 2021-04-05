@@ -321,28 +321,44 @@ LanguageFunction
 // ## STRUCTURE SPECIFICATION
 
 Domain
-    = WS e1:DomainElement es:(WS "," WS ei:DomainElement {return ei})* WS
+    = WS es:DomainCases { return es; }
+
+DomainCases
+    = e1:DomainElement WS es:("," WS ei:DomainElement WS {return ei})*
         { return [e1].concat(es) }
+    / ""
+        { return [] }
 
 DomainElement
     "domain element (any string not containing white space, comma, or parentheses)"
     = $ [^,()\t\n\r\v\f\u0020\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]+
 
 Tuples
-    = WS t1:Tuple ts:(WS "," WS ti:Tuple {return ti})* WS
+    = WS ts:TuplesCases { return ts; }
+
+TuplesCases
+    = t1:Tuple WS ts:("," WS ti:Tuple WS {return ti})*
         { return [t1].concat(ts) }
+    / ""
+        { return [] }
 
 Tuple
     "domain element or n-tuple of domain elements"
-    = "(" WS e1:DomainElement es:(WS "," WS ei:DomainElement {return ei})+
-        WS ")"
+    = "(" WS e1:DomainElement WS
+        es:("," WS ei:DomainElement WS {return ei})+
+        ")"
         { return [e1].concat(es) }
-    / WS e:DomainElement WS
+    / e:DomainElement
         { return [e] }
 
 Valuation
-    = WS p1:ValuationPair ps:(WS "," WS pi:ValuationPair {return pi})* WS
+    = WS ps:ValuationCases { return ps; }
+
+ValuationCases
+    = p1:ValuationPair WS ps:("," WS pi:ValuationPair WS {return pi})*
         { return [p1].concat(ps) }
+    / ""
+        { return [] }
 
 ValuationPair
     = "(" WS v:VariableSymbol WS "," WS e:DomainElement WS ")"
@@ -357,9 +373,13 @@ ValuationPair
 // ### Substitution with an a-priori language
 
 Substitution
-    = WS p1:SubstitutionPair
-        ps:(WS "," WS pi:SubstitutionPair {return pi})* WS
+    = WS ps:SubstitutionCases { return ps; }
+
+SubstitutionCases
+    = p1:SubstitutionPair WS ps:("," WS pi:SubstitutionPair WS {return pi})*
         { return [p1, ...ps] }
+    / ""
+        { return [] }
 
 SubstitutionPair
     = "(" WS v:VariableSymbol WS "," WS t:Term WS ")"
