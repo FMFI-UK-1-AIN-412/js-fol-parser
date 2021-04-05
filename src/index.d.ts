@@ -85,7 +85,7 @@ declare module "@fmfi-uk-1-ain-412/js-fol-parser" {
 
     export function parseTuples(input: string): Array<Array<string>>;
 
-    export function parseValuation(input: string): Array<[string, string]>;
+    export function parseValuation(input: string, language: Language): Array<[string, string]>;
 
     export function parseSubstitution<Term>(input: string, language: Language, factories: TermFactories<Term>): Array<[string, Term]>;
 }
