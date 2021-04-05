@@ -282,17 +282,26 @@ EmptyClause
 // ## LANGUAGE SPECIFICATION
 
 Constants
-    = WS c1:ConstantIdentifier
+    = WS cs:(ConstantsNE / EmptyList) { return cs; }
+
+ConstantsNE
+    = c1:ConstantIdentifier
         cs:(WS "," WS ci:ConstantIdentifier {return ci})* WS
         { return [c1].concat(cs) }
 
 Predicates
-    = WS p1:LanguagePredicate
+    = WS ps:(PredicatesNE / EmptyList) { return ps; }
+
+PredicatesNE
+    = p1:LanguagePredicate
         ps:(WS "," WS pi:LanguagePredicate {return pi})* WS
         { return [p1].concat(ps) }
 
 Functions
-    = WS f1:LanguageFunction
+    = WS fs:(FunctionsNE / EmptyList) { return fs; }
+
+FunctionsNE
+    = f1:LanguageFunction
         fs:(WS "," WS fi:LanguageFunction {return fi})* WS
         { return [f1].concat(fs) }
 
@@ -321,26 +330,22 @@ LanguageFunction
 // ## STRUCTURE SPECIFICATION
 
 Domain
-    = WS es:DomainCases { return es; }
+    = WS es:(DomainNE / EmptyList) { return es; }
 
-DomainCases
+DomainNE
     = e1:DomainElement WS es:("," WS ei:DomainElement WS {return ei})*
         { return [e1].concat(es) }
-    / ""
-        { return [] }
 
 DomainElement
     "domain element (any string not containing white space, comma, or parentheses)"
     = $ [^,()\t\n\r\v\f\u0020\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]+
 
 Tuples
-    = WS ts:TuplesCases { return ts; }
+    = WS ts:(TuplesNE / EmptyList) { return ts; }
 
-TuplesCases
+TuplesNE
     = t1:Tuple WS ts:("," WS ti:Tuple WS {return ti})*
         { return [t1].concat(ts) }
-    / ""
-        { return [] }
 
 Tuple
     "domain element or n-tuple of domain elements"
@@ -352,13 +357,11 @@ Tuple
         { return [e] }
 
 Valuation
-    = WS ps:ValuationCases { return ps; }
+    = WS ps:(ValuationNE / EmptyList) { return ps; }
 
-ValuationCases
+ValuationNE
     = p1:ValuationPair WS ps:("," WS pi:ValuationPair WS {return pi})*
         { return [p1].concat(ps) }
-    / ""
-        { return [] }
 
 ValuationPair
     = "(" WS v:VariableSymbol WS "," WS e:DomainElement WS ")"
@@ -373,13 +376,11 @@ ValuationPair
 // ### Substitution with an a-priori language
 
 Substitution
-    = WS ps:SubstitutionCases { return ps; }
+    = WS ps:(SubstitutionNE / EmptyList) { return ps; }
 
-SubstitutionCases
+SubstitutionNE
     = p1:SubstitutionPair WS ps:("," WS pi:SubstitutionPair WS {return pi})*
         { return [p1, ...ps] }
-    / ""
-        { return [] }
 
 SubstitutionPair
     = "(" WS v:VariableSymbol WS "," WS t:Term WS ")"
@@ -407,6 +408,11 @@ WS
 RequiredWS
     "required white space"
     = (Zs / [\t\n\r\v\f])+
+
+
+// ## WHITE SPACE
+EmptyList
+    = '' { return []; }
 
 
 // ## IDENTIFIERS
