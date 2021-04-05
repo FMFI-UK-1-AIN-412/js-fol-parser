@@ -1,4 +1,5 @@
 import {chance} from 'jest-chance'
+import {chanceWS} from './helpers/chance'
 
 import {parseClause} from '../index'
 
@@ -105,23 +106,29 @@ const chanceLowerDeg = (deg) =>
 
 const chanceClause = (deg, breadth) => {
   if (deg <= 0) {
-    const l = `${chance.pickone(['','¬'])}${chance.pickone(atoms)}`;
-    return { inStr: l, outStr: l };
+    const neg = chance.pickone(['','¬']);
+    const atom = chance.pickone(atoms);
+    return {
+      inStr: chanceWS() + neg + chanceWS() + atom + chanceWS(),
+      outStr: neg + atom
+    };
   }
   const subfs = chance.n(
     () => {
       const d = chanceLowerDeg(deg);
       const { inStr, outStr } = chanceClause(d, breadth);
       return {
-        inStr: d > 0 || chance.bool() ? `(${inStr})` : inStr,
+        inStr: d > 0 || chance.bool()
+          ? chanceWS() + `(${inStr})` + chanceWS()
+          : inStr,
         outStr
       };
     },
     chance.integer({ min: 1, max: breadth })
   );
   return {
-    inStr: subfs.map(({inStr}) => inStr).join('∨'),
-    outStr: subfs.map(({outStr}) => outStr).join('∨')
+    inStr: chanceWS() + subfs.map(f => f.inStr).join('∨') + chanceWS(),
+    outStr: subfs.map(f => f.outStr).join('∨')
   }
 }
 

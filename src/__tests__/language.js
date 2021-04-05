@@ -1,8 +1,8 @@
-import language, {constants, functions, predicates} from './helpers/language'
+import language, {constants, functions, predicates, variables} from './helpers/language'
 
 describe('language used for testing', () => {
   test('variables', () => {
-    ['x', 'F', '$v', '_', '$_', '__proměnná$'].forEach(v =>
+    variables.forEach(v =>
       expect(language.isVariable(v)).toBe(true)
     );
   });

@@ -1,5 +1,9 @@
 export const constants = new Set(['c', 'aConstant', '1'])
 
+export const variables = [
+  'x', 'y', 'u', 'F', '$v', '_x_', '$$123', 't14', '_', '$_', '__proměnná$'
+]
+
 const _functions = new Map(Object.entries({
   'f': 1,
   'G': 2,
