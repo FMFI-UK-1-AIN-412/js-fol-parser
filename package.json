@@ -1,6 +1,6 @@
 {
   "name": "@fmfi-uk-1-ain-412/js-fol-parser",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "A JavaScript parser for first-order logic languages",
   "repository": "https://github.com/FMFI-UK-1-AIN-412/js-fol-parser",
   "files": [

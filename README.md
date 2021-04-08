@@ -9,9 +9,10 @@ Parser parameters
 
 ### Factories
 
-Most parsers take a plain object consisting of factory functions that
+Most parsers take an object whose methods are factory functions that
 are expected to create representations of syntactic elements recognized
-by the parser. The required set of factories depends on the parser.
+by the parser or process them in another application-dependent way.
+The required set of factories depends on the parser.
 
 The most basic sets consists of factories producing terms:
 ```typescript
@@ -80,9 +81,9 @@ while `ee.expected(expectation)` generates a syntax error with the message
 <code>\`Expected ${expectation} but "${actual_input}" found.\`</code>.
 The latter should be preferred.
 
-### Language callbacks
+### Language
 
-Some parsers take a plain object of callbacks that recognize the three types
+Some parsers take an object whose methods should recognize the three types
 of non-logical symbols and the variables of a first-order language.
 ```typescript
 interface Language {
@@ -92,8 +93,8 @@ interface Language {
     isVariable: (symbol: string) => boolean,
 }
 ```
-When the parser encounters a possible
-[non-logical or variable symbol](#non-logical-and-variable-symbols),
+When the parser encounters a
+[possible non-logical or variable symbol](#non-logical-and-variable-symbols),
 it uses these callbacks to determine its type.
 Note that the symbol's type actually influences
 the parser's decision about the kind of expression it is parsing.
@@ -128,7 +129,8 @@ Equality atoms are written with infix equality symbol.
 
 The parsing function
 ```typescript
-function parseFormula<Term, Formula>(input: string, language: Language, factories: FormulaFactories<Term, Formula>): Formula
+function parseFormulaStrict<Term, Formula>(input: string,
+    language: Language, factories: FormulaFactories<Term, Formula>): Formula
 ```
 recognizes first-order formulas with a rather strict syntax
 in which each binary subformula must be parenthesized,
@@ -138,7 +140,8 @@ can be optionally parenthesized.
 
 The function
 ```typescript
-function parseFormulaWithPrecedence<Term, Formula>(input: string, language: Language, factories: FormulaFactories<Term, Formula>): Formula
+function parseFormulaWithPrecedence<Term, Formula>(input: string,
+    language: Language, factories: FormulaFactories<Term, Formula>): Formula
 ```
 recognizes first-order formulas with a relaxed syntax
 in which parentheses can be ommited according to precedence
@@ -156,7 +159,8 @@ of syntactic operators, which is as follows:
 
 The parser of clauses
 ```typescript
-function parseClause<Term, Literal, Clause>(input: string, language: Language, factories: ClauseFactories<Term, Literal, Clause>): Clause
+function parseClause<Term, Literal, Clause>(input: string,
+    language: Language, factories: ClauseFactories<Term, Literal, Clause>): Clause
 ```
 recognizes (possibly nested) disjunctions of
 first-order predicate literals. Equality literals are not allowed.
@@ -258,7 +262,8 @@ Substitutions
 
 The substitution parser
 ```typescript
-export function parseSubstitution<Term>(input: string, language: Language, factories: TermFactories<Term>): Array<[string, Term]>;
+export function parseSubstitution<Term>(input: string,
+    language: Language, factories: TermFactories<Term>): Array<[string, Term]>;
 ```
 accepts comma-separated lists of ordered pairs specifying a substitution,
 i.e., a map from variables to terms.
@@ -281,12 +286,12 @@ The trio of parsers
 ```typescript
 function parseDomain(input: string): Array<string>;
 function parseTuples(input: string): Array<Array<string>>;
-function parseValuation(input: string): Array<[string, string]>;
+function parseValuation(input: string, language: Language): Array<[string, string]>;
 ```
 allows for processing parts of definitions of finite structures
 and variable valuation.
 A domain element is a non-empty string of arbitrary characters
-except `(`, `)`, `,`, Unicode spaces,
+except `(`, `)`, `,`, Unicode spaces, and
 spacing ASCII control characters (\t, \n, \r, \v, \f).
 
 `parseDomain` accepts a comma-separated list of domain elements.
@@ -304,6 +309,8 @@ as <code>(<var>var</var>, <var>domain-element</var>)</code>
 or <code><var>var</var> MAPS-TO <var>domain-element</var></code>,
 where `MAPS-TO` has been specified
 in the section on [substitutions](#substitutions).
+This parser requires [a language](#language) as its second argument
+in order to recognize the symbols of variables in the input.
 
 Non-logical and variable symbols
 --------------------------------

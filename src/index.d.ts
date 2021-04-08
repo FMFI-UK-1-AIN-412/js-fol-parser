@@ -64,7 +64,7 @@ declare module "@fmfi-uk-1-ain-412/js-fol-parser" {
 
     export function parseTerm<Term>(input: string, language: Language, factories: TermFactories<Term>): Term;
 
-    export function parseFormula<Term, Formula>(input: string, language: Language, factories: FormulaFactories<Term, Formula>): Formula;
+    export function parseFormulaStrict<Term, Formula>(input: string, language: Language, factories: FormulaFactories<Term, Formula>): Formula;
 
     export function parseFormulaWithPrecedence<Term, Formula>(input: string, language: Language, factories: FormulaFactories<Term, Formula>): Formula;
 
