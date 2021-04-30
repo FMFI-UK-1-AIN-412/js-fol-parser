@@ -219,6 +219,7 @@ PredicateSymbol
 EqualitySymbol
     "equality symbol"
     = "="
+    / "≐"
 
 ConjunctionSymbol
     "conjunction symbol"

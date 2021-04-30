@@ -33,6 +33,7 @@ describe('atoms', () => {
 
   test('equality atoms', () => {
     expect(parse('1=c')).toBe('c:1=c:c');
+    expect(parse('1≐c')).toBe('c:1=c:c');
     expect(parse('G(x,1)=f(c)')).toBe('G(v:x,c:1)=f(c:c)');
     expect(parse(`
       aFunction(
