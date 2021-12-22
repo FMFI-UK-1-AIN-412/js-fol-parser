@@ -88,4 +88,6 @@ declare module "@fmfi-uk-1-ain-412/js-fol-parser" {
     export function parseValuation(input: string, language: Language): Array<[string, string]>;
 
     export function parseSubstitution<Term>(input: string, language: Language, factories: TermFactories<Term>): Array<[string, Term]>;
+
+    export function parseTff<Term, Formula>(input: string, factories: FormulaFactories<Term, Formula>): Formula;
 }

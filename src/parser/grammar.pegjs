@@ -413,6 +413,13 @@ MapsTo
     / "\\mapsto" ! IdentifierPart
 
 
+// ## TPTP syntax
+
+
+tff = WS "tff(" WS name:Identifier WS "," WS role:Identifier WS "," WS formula:Identifier WS ")" WS "." WS
+        { return { name, role, formula }; }
+
+
 // ## WHITE SPACE
 
 WS

@@ -80,3 +80,9 @@ export const parseSubstitution = (input, language, factories) =>
     language,
     factories
   })
+
+export const parseTff = (input, factories) =>
+  parse(input, {
+    startRule: startRules.Tff,
+    factories
+  })
