@@ -415,10 +415,313 @@ MapsTo
 
 // ## TPTP syntax
 
+tff = WS "tff(" WS n:name "," WS r:formulaRole "," WS f:tffFormula WS ")." WS
+        { return { n, r, f }; }
 
-tff = WS "tff(" WS name:Identifier WS "," WS role:Identifier WS "," WS formula:Identifier WS ")" WS "." WS
-        { return { name, role, formula }; }
+name
+    = i:Identifier
+        { return i; }
 
+formula_role
+    = "axiom"
+        { return "axiom"; }
+    / "type"
+        { return "type"; }
+
+
+tffFormula
+    = l:tffLogicFormula
+        { return l }
+    / a:tffAtomTyping
+        { return a }
+    / s:tffSubtype
+        { return s }
+    / t:tfxSequent
+        { return t}
+
+tffLogicFormula
+    = u:tffUnitaryFormula
+        { return u}
+    / un:tffUnaryFormula
+        { return un }
+    / b:tffBinaryFormula
+        { return b }
+    / d:tffDefinedInfix
+        { return d}
+
+tffUnitaryFormula
+    = q:tffQuantifiedFormula
+        { return q}
+    / a:tffAtomicFormula
+        { return a }
+    / u:tfxUnitaryFormula
+        { return u }
+    / WS "(" WS l:tffLogicFormula  WS ")"
+        { return l}
+
+tffQuantifiedFormula
+    = WS q:fofQuantifier WS "[" v:tffVariableList WS "]" WS ":" WS u:tffUnitFormula
+        { return {q, v, u} ;}
+
+fofQuantifier
+   = "?"
+    {return "?"}
+   / "!"
+   {return "!" }
+
+tffVariableList
+    = WS v:tffVariable WS
+      {return v}
+     / WS v:tffVariable WS "," WS l:tffVariableList WS
+      {return (v, l) }
+
+tffVariable
+    = WS t:tffTypedVariable WS
+        {return t}
+    / WS v:variable WS
+        {return v}
+
+variable = [A-Z]*
+
+tffTypedVariable
+    = WS v:variable WS ":" WS tffAtomicType
+
+tffUnitFormula
+    = WS u:tffUnitaryFormula WS
+        {return u}
+    / WS t:tffUnaryFormula WS
+        {return t}
+    / WS d:tffDefinedInfix WS
+        {return d}
+
+tffUnaryFormula
+    = WS p:tffPrefixUnary WS
+        {return p}
+    / WS i:tffInfixUnary WS
+        {return i}
+
+tffPrefixUnary
+    = WS u:unaryConnective WS " " p:tffPreunitFormula WS
+        {return u, p}
+
+tffInfixUnary
+    = WS u:tffUnitaryTerm RequiredWS i:infixInequality RequiredWS t:tffUnitaryTerm
+
+unaryConnective = "~" {return "~"}
+
+tffUnitaryTerm
+    = WS a:tffAtomicFormula WS
+        {return a}
+     / WS d:definedTerm WS
+        {return d}
+     / WS t:tfxTuple WS
+        {return t}
+     / WS v:variable WS
+        {return v}
+     / WS "(" WS l:tffLogicFormula WS ")" WS
+        {return l}
+
+infixInequality = "!=" {return "!="}
+
+tffPreunitFormula
+    = WS u:tffUnitaryFormula WS
+
+    / WS p:tffPrefixUnary WS
+
+tfxTuple
+    = WS "[" WS "]" WS
+
+    / WS "[" a:tffArguments "]"
+
+
+tffArguments
+    = WS t:tffTerm WS
+
+    / WS t:tffTerm WS "," WS a:tffArguments WS
+
+tffTerm
+    = WS l:tffLogicFormula WS
+
+    / WS d:definedTerm WS
+
+    / WS t:tfxTuple WS
+
+definedTerm
+    = WS [0-9] WS
+
+    / WS d:distinctObject WS
+
+distinctObject
+    = '"' WS '(' WS [\40-\41\43-\133\135-\176]|[\\]["\\] WS ')' WS '*' WS '"'
+
+tffBinaryFormula
+    = WS n:tffBinaryNonassoc WS
+
+    / WS a:tffBinaryAssoc WS
+
+tffBinaryNonassoc
+    = WS u:tffUnitFormula RequiredWS c:nonassocConnective WS tffUnitFormula
+
+nonassocConnective
+    = WS "<=>" WS
+
+    / WS "=>" WS
+
+    / WS "<=" WS
+
+    / WS "<~>" WS
+
+    / WS "~|" WS
+
+    / WS "~&" WS
+
+tffBinaryAssoc
+    = WS o:tffOrFormula WS
+
+    /  WS a:tffAndFormula WS
+
+tffDefinedInfix
+    = WS u:tffUnitaryTerm> RequiredWS i:definedInfixPred RequiredWS t:tffUnitaryTerm WS
+        {return u, i, t}
+
+tffAndFormula
+    = WS u:tffUnitFormula WS "&" WS f:tffUnitFormula WS
+
+    / WS a:tffAndFormula WS "&" WS u:tffUnitFormula WS
+
+tffOrFormula
+    = WS u:tffUnitFormula WS "|"  WS f:tffUnitFormula WS
+
+    / WS o:tffOrFormula WS "|" WS u:tffUnitFormula WS
+
+tffAtomTyping
+    = WS u:untypedAtom WS ":" WS t:tffTopLevelType WS
+
+    / WS "(" WS a:tffAtomTyping WS ")"
+
+tffAtomicType
+    = WS t:typeConstant WS
+
+    /WS d:definedType WS
+
+    /WS v:variable WS
+
+    / WS t:typeFunctor WS "(" WS a:tffTypeArguments WS ")" WS
+
+    / WS "(" WS a:tffAtomicType WS ")" WS "|" WS t:tfxTupleType WS
+
+tffNonAtomicType
+    = WS m:tffMappingType WS
+
+    / WS q:tf1QuantifiedType WS
+
+    / WS "(" WS  n:tffNonAtomicType WS ")" WS
+
+tffMappingType
+    = WS u:tffUnitaryType RequiredWS ">" RequiredWS a:tffAtomicType WS
+
+tfxTupleType
+    = WS "[" WS t:tffTypeList WS "]" WS
+
+tffTypeList
+    = WS t:tffTopLevelType WS
+
+    / WS t:tffTopLevelType WS "," WS l:tffTypeList WS
+
+tfxTuple
+    = WS EmptyList WS
+
+    / WS "[" WS a:tffArguments WS "]" WS
+
+tffTypeArguments
+    = WS a:tffAtomicType WS
+
+    / WS a:tffAtomicType WS "," WS t:tffTypeArguments WS
+
+typeFunctor
+    = WS a:atomicWord WS
+
+atomicWord
+    = WS [a-z, 0-9]* WS
+
+    / WS "'" WS [\40-\41\43-\133\135-\176]|[\\]["\\] WS [\40-\41\43-\133\135-\176]|[\\]["\\] WS "*" WS "'" WS
+
+definedType
+    = WS "$" WS [a-z, 0-9]* WS
+
+typeConstant
+    = WS t:typeFunctor WS
+
+tf1QuantifiedType
+    = WS "!>" WS "[" WS v:tffVariableList WS "]" WS ":" WS m:tffMonotype
+
+tffMonotype
+    = WS a:tffAtomicType WS
+
+    / WS "(" WS m:tffMappingType WS ")" WS
+
+    / WS q:tf1QuantifiedType WS
+
+tffUnitaryType
+    = WS a:tffAtomicType WS
+
+    / WS "(" WS x:tffXprodType WS ")" WS
+
+tffAtomicFormula
+    = WS p:tffPlainAtomic WS
+
+    / WS d:tffDefinedAtomic WS
+
+    / WS s:tffSystemAtomic WS
+
+tffPlainAtomic //este jedno
+    = WS c:constant WS
+
+    / WS f:functor WS "(" WS a:tffArguments WS ")" WS
+
+functor
+    = WS a:atomicWord WS
+    { return a}
+
+tffDefinedAtomic
+
+tffSystemAtomic
+
+
+tffTopLevelType
+    = WS a:tffAtomicType WS
+
+    / WS  n:tffNonAtomicType WS
+
+tffSubtype
+    = WS u:untypedAtom RequiredWS s:subtypeSign RequiredWS s:atom WS
+
+untypedAtom
+    = WS c:constant WS
+
+    / WS s:systemConstant WS
+
+subtypeSign
+
+definedConstant
+
+constant
+    = WS a:atomicWord WS
+
+
+atom
+    =  WS u:untypedAtom WS
+
+    / WS d:definedConstant WS
+
+tfxSequent
+    = WS t:tfxTuple RequiredWS "-->" RequiredWS f:tfxTuple WS
+
+    / WS "(" WS s:tfxSequent WS ")" WS
+
+definedInfixPred = WS e:infixEquality WS {return e}
+
+infixEquality = "=" {return "="}
 
 // ## WHITE SPACE
 
