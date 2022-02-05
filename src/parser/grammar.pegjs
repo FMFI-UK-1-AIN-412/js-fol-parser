@@ -416,7 +416,7 @@ MapsTo
 // ## TPTP syntax
 
 tff = WS "tff(" WS n:name "," WS r:formulaRole "," WS f:tffFormula WS ")." WS
-        { return { n, r, f }; }
+        { return [n, r, f ]; }
 
 name
     = i:Identifier
@@ -459,7 +459,7 @@ tffUnitaryFormula
     / WS "(" WS l:tffLogicFormula  WS ")"
         { return l}
 
- tfxUnitaryFormula
+tfxUnitaryFormula
     = WS v:variable WS
     {return factories.variable(v)}
 
@@ -475,10 +475,11 @@ fofQuantifier
      {return (v, f) => factories.existentialQuant(v, f,ee)}
 
 tffVariableList
-    = WS v:tffVariable WS
-      {return v}
-     / WS v:tffVariable WS "," WS l:tffVariableList WS
-      {return [v, ...l] }
+    = WS v:tffVariable WS "," WS l:tffVariableList WS
+            {return [v, ...l] }
+
+     / WS v:tffVariable WS
+             {return v}
 
 tffVariable
     = WS t:tffTypedVariable WS
@@ -486,11 +487,13 @@ tffVariable
     / WS v:variable WS
         {return v}
 
-variable = a:[A-Z]*
-    {return factories.variable(a)}
+variable
+    = WS a:[A-Z, a-z, 0-9]+ WS
+        {return factories.variable(a)}
 
 tffTypedVariable
     = WS v:variable WS ":" WS tffAtomicType
+    { return v}
 
 tffUnitFormula
     = WS u:tffUnitaryFormula WS
@@ -520,20 +523,20 @@ unaryConnective
 
 
 tffUnitaryTerm
-    = WS a:tffAtomicFormula WS
-        {return a}
+    = WS "(" WS l:tffLogicFormula WS ")" WS
+        {return l}
      / WS d:definedTerm WS
         {return d}
      / WS t:tfxTuple WS
         {return t}
      / WS v:variable WS
         {return v}
-     / WS "(" WS l:tffLogicFormula WS ")" WS
-        {return l}
+     / WS a:tffAtomicFormula WS
+        {return a}
 
 infixInequality
     = "!="
-        {return (t1,t2) => factories.negation(factories.equalityAtom(t1,t2,ee)}
+        {return (t1,t2) => factories.negation(factories.equalityAtom(t1,t2,ee), ee)}
 
 tffPreunitFormula
     = WS u:tffUnitaryFormula WS
@@ -545,15 +548,15 @@ tffPreunitFormula
 tfxTuple
     = WS "[" WS "]" WS
         { return [] }
-    / WS "[" a:tffArguments "]"
+    / WS "[" a:tffArguments "]" WS
         {return [a]}
 
 
 tffArguments
-    = WS t:tffTerm WS
-        { return t }
-    / WS t:tffTerm WS "," WS a:tffArguments WS
-        { return [t, ...a]}
+    = WS t:tffTerm WS "," WS a:tffArguments WS
+              { return [t, ...a]}
+    / WS t:tffTerm WS
+              { return t }
 tffTerm
     = WS l:tffLogicFormula WS
         {return l}
@@ -596,13 +599,13 @@ nonassocConnective
         {return (t1,t2) => factories.implication(t2,t1,ee)}
 
     / WS "<~>" WS
-        {return (t1,t2) => factories.negation(factories.equivalence(t1,t2,ee)}
+        {return (t1,t2) => factories.negation(factories.equivalence(t1,t2,ee), ee)}
 
     / WS "~|" WS
-            {return (t1,t2) => factories.negation(factories.disjunction(t1,t2,ee)}
+            {return (t1,t2) => factories.negation(factories.disjunction(t1,t2,ee), ee)}
 
     / WS "~&" WS
-        {return (t1,t2) => factories.negation(factories.conjunction(t1,t2,ee)}
+        {return (t1,t2) => factories.negation(factories.conjunction(t1,t2,ee), ee)}
 
 tffBinaryAssoc
     = WS o:tffOrFormula WS
@@ -619,77 +622,81 @@ tffAndFormula
     = WS u:tffUnitFormula WS "&" WS f:tffUnitFormula WS
         {return factories.conjunction(u, f, ee) }
 
-    / WS a:tffAndFormula WS "&" WS u:tffUnitFormula WS
-        {return factories.conjunction(a, u, ee) }
+    /  WS leftmost:tffUnitFormula WS
+                  rights:(
+                      "&" WS right:tffAndFormula WS
+                          { return right }
+                  )*
+                  {
+                      return [leftmost,...rights].reduce(
+                          (disj, right) =>
+                              factories.conjunction(disj, right, ee)
+                      )
+                  }
 
 tffOrFormula
     = WS u:tffUnitFormula WS "|"  WS f:tffUnitFormula WS
         {return factories.disjunction(u, f, ee)}
 
-    / WS o:tffOrFormula WS "|" WS u:tffUnitFormula WS
-         {return factories.disjunction(...o, u, ee)}
+    /  WS leftmost:tffUnitFormula WS
+              rights:(
+                  "|" WS right:tffOrFormula WS
+                      { return right }
+              )*
+              {
+                  return [leftmost,...rights].reduce(
+                      (disj, right) =>
+                          factories.disjunction(disj, right, ee)
+                  )
+              }
 tffAtomTyping
     = WS u:untypedAtom WS ":" WS t:tffTopLevelType WS
-        {return t(u)}
+        {return u}
 
     / WS "(" WS a:tffAtomTyping WS ")"
-        {return [a] }
 
 tffAtomicType
-    = WS t:typeConstant WS
-        {return c}
-
-    /WS d:definedType WS
-        {return d }
-
-    /WS v:variable WS
-        {return factories.variable(v, ee)}
-
-    / WS t:typeFunctor WS "(" WS a:tffTypeArguments WS ")" WS
+    = WS t:typeFunctor WS "(" WS a:tffTypeArguments WS ")" WS
         {return factories.functionApplication(t, a, ee) }
 
     / WS "(" WS a:tffAtomicType WS ")" WS
-        {return ...a}
+
+    /WS v:variable WS
+        {return v}
+
+    / WS t:typeConstant WS
+        {return c}
+
+    /  WS d:definedType WS
 
     / WS t:tfxTupleType WS
-        {return t}
 
 tffNonAtomicType
-    = WS m:tffMappingType WS
-        {return m}
+    = WS "(" WS  n:tffNonAtomicType WS ")" WS
 
     / WS q:tf1QuantifiedType WS
-        {return q}
 
-    / WS "(" WS  n:tffNonAtomicType WS ")" WS
-        {return  ...n}
+    / WS m:tffMappingType WS
 
 tffMappingType
     = WS u:tffUnitaryType RequiredWS ">" RequiredWS a:tffAtomicType WS
-        {return factories.equalityAtom(u, a)}
 
 tfxTupleType
     = WS "[" WS t:tffTypeList WS "]" WS
-        {return t}
+
 
 tffTypeList
-    = WS t:tffTopLevelType WS
-        {return t}
+    = WS t:tffTopLevelType WS "," WS l:tffTypeList WS
 
-    / WS t:tffTopLevelType WS "," WS l:tffTypeList WS
-        {return [t, ...l];}
-
-
+    / WS t:tffTopLevelType WS
 
 tffTypeArguments
-    = WS a:tffAtomicType WS
-        {return a}
-    / WS a:tffAtomicType WS "," WS t:tffTypeArguments WS
-        {return [a, ...t]}
+    = WS a:tffAtomicType WS "," WS t:tffTypeArguments WS
+
+    / WS a:tffAtomicType WS
 
 typeFunctor
     = WS a:atomicWord WS
-        {return a}
 
 atomicWord
     = WS l:lowerWord WS
@@ -700,7 +707,6 @@ atomicWord
 
 definedType
     = WS "$" WS l:lowerWord WS
-        { return l;}
 
 typeConstant
     = WS t:typeFunctor WS
@@ -708,31 +714,28 @@ typeConstant
 
 tf1QuantifiedType
     = WS "!>" WS "[" WS v:tffVariableList WS "]" WS ":" WS m:tffMonotype
-        {factories.existentialQuant(v, m, ee)}
 
 tffMonotype
     = WS a:tffAtomicType WS
-        {return a}
 
     / WS "(" WS m:tffMappingType WS ")" WS
-        {return m}
 
     / WS q:tf1QuantifiedType WS
-        {return q}
 
 tffUnitaryType
     = WS a:tffAtomicType WS
-        {return a}
 
     / WS "(" WS x:tffXprodType WS ")" WS
-        {return x}
 
 tffXprodType
     =  WS u:tffUnitaryType WS '*' WS  a:tffAtomicType
-        {return [u, a]}
 
-    /WS x:tffXprodType WS '*' WS a:tffAtomicType WS
-        {return [return [...x, a]}
+    / WS leftmost:tffAtomicType WS
+             rights:(
+                 WS '*' WS right:tffXprodType WS
+                     { return right }
+             )*
+
 
 tffAtomicFormula
     = WS p:tffPlainAtomic WS
@@ -788,17 +791,14 @@ tfxLet
 
 tfxLetTypes
     = WS a:tffAtomTyping WS
-        {return a}
 
     / WS "[" WS l:tffAtomTypingList WS "]" WS
-        {return l}
 
 tffAtomTypingList
     = WS a:tffAtomTyping WS
-        {return a}
+
 
     / WS a:tffAtomTyping WS "," WS l:tffAtomTypingList WS
-        {return [a, ...l]}
 
 tfxLetDefns
     = WS d:tfxLetDefn WS
@@ -831,25 +831,21 @@ assignment
 
 tffTopLevelType
     = WS a:tffAtomicType WS
-        {return a}
 
     / WS  n:tffNonAtomicType WS
-        {return n}
 
 tffSubtype
     = WS u:untypedAtom RequiredWS s:subtypeSign RequiredWS a:atom WS
-         {return s(u, a) }
 
 untypedAtom
     = WS c:constant WS
-         {return factories.constant(c)}
+         {return c}
 
     / WS s:systemConstant WS
          {return s}
 
 subtypeSign
     = "<<"
-    {return (a,u) => ()} //toDO nejaka func
 
 systemFunctor
     = WS a:atomicSystemWord WS
@@ -860,7 +856,7 @@ atomicSystemWord
          {return  factories.constant(l)}
 
 lowerWord
-    = WS a:[a-z]+[0-9]* WS
+    = WS a:[a-z, A-Z, 0-9]* WS
         {return a}
 
 definedFunctor
