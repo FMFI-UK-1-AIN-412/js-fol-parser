@@ -488,7 +488,7 @@ tffVariable
         {return v}
 
 variable
-    = a:$[A-Z, a-z, 0-9, _, $]* WS
+    = a:$[A-Za-z0-9_$]* WS
         {return factories.variable(a, ee)}
 
 tffTypedVariable
@@ -566,7 +566,7 @@ tffTerm
         {return t}
 
 definedTerm
-    = a:$[a-z A-Z 0-9 _ $ ]* WS
+    = a:$[a-zA-Z0-9_$]* WS
         {return factories.constant(a, ee)}
 
     / d:distinctObject
@@ -851,7 +851,7 @@ atomicSystemWord
          {return  factories.constant(l, ee)}
 
 lowerWord
-    =  a:$[a-z,A-Z,0-9, _ , $]* WS
+    =  a:$[a-zA-Z0-9_$]* WS
         {return a}
 
 definedFunctor
