@@ -553,10 +553,8 @@ tfxTuple
 
 
 tffArguments
-    = t:tffTerm ","  a:tffArguments
-              { return [t, ...a]}
-    / t:tffTerm
-              { return [t] }
+    = t1:tffTerm ts:("," WS ti:tffTerm { return ti })*
+              { return [t1].concat(ts) }
 tffTerm
     = d:definedTerm
               {return d}
@@ -568,7 +566,7 @@ tffTerm
         {return t}
 
 definedTerm
-    = a:$[a-z, A-Z, 0-9, _ ,$ ]* WS
+    = a:$[a-z A-Z 0-9 _ $ ]* WS
         {return factories.constant(a, ee)}
 
     / d:distinctObject
@@ -577,8 +575,8 @@ distinctObject
     = q1:doubleQuote d:doChar "*" WS q2:doubleQuote WS
        {return factories.constant("null", ee)}
 
-doChar  //TODO opytat sa  [\40-\41\43-\133\135-\176] '|' WS [\\]["\\] toto ako tam dat
-    = '(' WS [\u0020-\u0021] ')' WS
+doChar
+    = '(' WS [\u0020-\u0021 \u0023-\u005B \u005D-\u007E] '|' [\\]["\\] ')' WS
 
 doubleQuote
     = '"'
@@ -702,8 +700,7 @@ atomicWord
     = l:lowerWord
         { return l}
 
-    / "'" "'" //toDo prepisat
-        {return null}
+    / d:distinctObject
 
 definedType
     =  "$" l:lowerWord
