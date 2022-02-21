@@ -52,9 +52,9 @@ describe('tff', () => {
   });
   test('andHodnotenie', () => {
     expect(parse('tff(predicate_hodnotenie,axiom,' +
-        '~hodnotenie(jozko,jozko) & hodnotenie(jozko,fmb_$i_2)' +
-        '& ~hodnotenie(fmb_$i_2,jozko)' +
-        '& ~hodnotenie(fmb_$i_2,fmb_$i_2)' +
+        '~hodnotenie(jozko, jozko) & hodnotenie(jozko, fmb_$i_2)' +
+        '& ~hodnotenie(fmb_$i_2, jozko)' +
+        '& ~hodnotenie(fmb_$i_2, fmb_$i_2)' +
          ').')).toEqual(
         {name:'predicate_hodnotenie', type:'axiom', formula:
           factoriesWoLanguage.conjunction(
@@ -77,4 +77,133 @@ describe('tff', () => {
               }},
     );
   });
+    test('structureOfFourElements', () => {
+        expect(parse('tff(declare_$i2,type,petra:$i).')).toEqual(
+            {name:'declare_$i2', type:'type', formula:
+                    {
+                        "atom": factoriesWoLanguage.constant('petra'),
+                        "kind": "atom typing",
+                        "type": "$i",
+                    }},
+        );
+
+        expect(parse('tff(finite_domain,axiom,\n' +
+            '      ! [X:$i] : (\n' +
+            '         X = jozko | X = petra | X = hanka | X = katka\n' +
+            '      ) ).')).toEqual(
+            {
+                name: 'finite_domain', type: 'axiom', formula:
+                    factoriesWoLanguage.universalQuant(factoriesWoLanguage.variable("X"),
+                        factoriesWoLanguage.disjunction(
+                            factoriesWoLanguage.disjunction(
+                                factoriesWoLanguage.disjunction(
+                                    factoriesWoLanguage.equalityAtom(factoriesWoLanguage.constant("X"), factoriesWoLanguage.constant("jozko")),
+                                    factoriesWoLanguage.equalityAtom(factoriesWoLanguage.constant("X"), factoriesWoLanguage.constant("petra"))
+                                ),
+                                factoriesWoLanguage.equalityAtom(factoriesWoLanguage.constant("X"), factoriesWoLanguage.constant("hanka"))
+                            ),
+                            factoriesWoLanguage.equalityAtom(factoriesWoLanguage.constant("X"), factoriesWoLanguage.constant("katka"))
+                        )
+                    )
+            }
+        );
+        expect(parse('tff(distinct_domain,axiom,\n' +
+            '         jozko != petra & jozko != hanka & jozko != katka & petra != hanka & petra != katka & \n' +
+            '         hanka != katka\n' +
+            ').')).toEqual(
+            {
+                name: 'distinct_domain', type: 'axiom', formula:
+                    factoriesWoLanguage.conjunction(
+                        factoriesWoLanguage.conjunction(
+                            factoriesWoLanguage.conjunction(
+                                factoriesWoLanguage.conjunction(
+                                    factoriesWoLanguage.conjunction(
+                                        factoriesWoLanguage.negation(
+                                            factoriesWoLanguage.equalityAtom(
+                                                factoriesWoLanguage.constant("jozko"), factoriesWoLanguage.constant("petra")
+                                            )
+                                        ),
+                                        factoriesWoLanguage.negation(
+                                            factoriesWoLanguage.equalityAtom(
+                                                factoriesWoLanguage.constant("jozko"), factoriesWoLanguage.constant("hanka")
+                                            )
+                                        ),
+                                    ),
+                                    factoriesWoLanguage.negation(
+                                        factoriesWoLanguage.equalityAtom(
+                                            factoriesWoLanguage.constant("jozko"), factoriesWoLanguage.constant("katka")
+                                        )
+                                    ),
+                                ),
+                                factoriesWoLanguage.negation(
+                                    factoriesWoLanguage.equalityAtom(
+                                        factoriesWoLanguage.constant("petra"), factoriesWoLanguage.constant("hanka")
+                                    )
+                                )
+                            ),
+                            factoriesWoLanguage.negation(
+                                factoriesWoLanguage.equalityAtom(
+                                    factoriesWoLanguage.constant("petra"), factoriesWoLanguage.constant("katka")
+                                )
+                            )
+
+                        ),
+                        factoriesWoLanguage.negation(
+                            factoriesWoLanguage.equalityAtom(
+                                factoriesWoLanguage.constant("hanka"), factoriesWoLanguage.constant("katka")
+                            )
+                        )
+                    )
+
+            },
+        );
+        expect(parse('tff(predicate_student,axiom,\n' +
+            '           student(jozko)\n' +
+            '         & student(petra)\n' +
+            '         & student(hanka)\n' +
+            '         & student(katka)\n' +
+            '\n' +
+            ').')).toEqual(
+            {name:'predicate_student', type:'axiom', formula:
+                    factoriesWoLanguage.conjunction(
+                        factoriesWoLanguage.conjunction(
+                            factoriesWoLanguage.conjunction(
+                                factoriesWoLanguage.predicateAtom("student", [factoriesWoLanguage.constant('jozko')]),
+                                factoriesWoLanguage.predicateAtom("student", [factoriesWoLanguage.constant('petra')])
+                            ),
+                            factoriesWoLanguage.predicateAtom("student", [factoriesWoLanguage.constant('hanka')])
+
+                        ),
+                        factoriesWoLanguage.predicateAtom("student", [factoriesWoLanguage.constant('katka')])
+                    ),
+
+
+            },
+        );
+        expect(parse('tff(predicate_znamka,axiom,\n' +
+            '           znamka(jozko)\n' +
+            '         & znamka(petra)\n' +
+            '         & znamka(hanka)\n' +
+            '         & znamka(katka)\n' +
+            '\n' +
+            ').')).toEqual(
+            {name:'predicate_znamka', type:'axiom', formula:
+                    factoriesWoLanguage.conjunction(
+                        factoriesWoLanguage.conjunction(
+                            factoriesWoLanguage.conjunction(
+                                factoriesWoLanguage.predicateAtom("znamka", [factoriesWoLanguage.constant('jozko')]),
+                                factoriesWoLanguage.predicateAtom("znamka", [factoriesWoLanguage.constant('petra')])
+                            ),
+                            factoriesWoLanguage.predicateAtom("znamka", [factoriesWoLanguage.constant('hanka')])
+
+                        ),
+                        factoriesWoLanguage.predicateAtom("znamka", [factoriesWoLanguage.constant('katka')])
+                    ),
+
+
+            },
+        );
+
+
+    });
 });
