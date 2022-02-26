@@ -68,12 +68,12 @@ describe('tff', () => {
     );
   });
   test('typeOfPredicate', () => {
-    expect(parse('tff(declare_hodnotenie,type,hodnotenie: ($i * $i) > $o).')).toEqual(
+    expect(parse('tff(declare_hodnotenie,type,hodnotenie: $i * $i > $o).')).toEqual(
         {name:'declare_hodnotenie', type:'type', formula:
               {
                 "atom": factoriesWoLanguage.constant('hodnotenie'),
                 "kind": "atom typing",
-                "type": "($i * $i) > $o",
+                "type": "$i * $i > $o",
               }},
     );
   });
