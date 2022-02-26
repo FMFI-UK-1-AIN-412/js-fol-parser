@@ -720,17 +720,20 @@ tffMonotype
 
 tffUnitaryType
     = "(" WS x:tffXprodType ")"  WS
-    //todo x:tffXprodType //because vampire output doesn't contains "()"
+
+    / x:tffXprodType //because vampire output doesn't contains "()"
+
     / a:tffAtomicType
 
 tffXprodType
-    = u:tffUnitaryType  '*' WS  a:tffAtomicType
+    = "(" WS x:tffXprodType ")"  WS  '*' WS  a:tffAtomicType
 
     / leftmost:tffAtomicType
              rights:(
                   '*' WS right:tffXprodType
 
              )*
+    / a:tffAtomicType '*' WS  a2:tffAtomicType
 
 
 tffAtomicFormula
