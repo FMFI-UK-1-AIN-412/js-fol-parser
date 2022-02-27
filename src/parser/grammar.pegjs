@@ -415,7 +415,7 @@ MapsTo
 
 // ## TPTP syntax
 
-tff = WS "tff(" WS n:name "," WS r:formulaRole "," WS f:tffFormula WS ")." WS
+tff = WS "tff(" WS n:name "," WS r:formulaRole "," WS f:formula WS ")." WS
         { return {name:n, type:r, formula:f }; }
 
 name
@@ -427,6 +427,12 @@ formulaRole
         { return "axiom"; }
     / "type"
         { return "type"; }
+
+formula
+    = ('%' WS [\u0020-\u007E]* [\t\n\r\v\f]+)+
+        {return "comment"}
+    / f:tffFormula
+        {return f}
 
 
 tffFormula
