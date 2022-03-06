@@ -415,7 +415,7 @@ MapsTo
 
 // ## TPTP syntax
 
-tff = WS "tff(" WS n:name "," WS r:formulaRole "," WS f:formula WS ")." WS
+tff = WS "tff(" WS n:name "," WS r:formulaRole "," WS  f:tffFormula WS ")." WS
         { return {name:n, type:r, formula:f }; }
 
 name
@@ -428,22 +428,24 @@ formulaRole
     / "type"
         { return "type"; }
 
-formula
+tffWS
     = ('%' WS [\u0020-\u007E]* [\t\n\r\v\f]+)+
         {return "comment"}
-    / f:tffFormula
-        {return f}
+
+    / WS
 
 
 tffFormula
-    = a:tffAtomTyping
+    = a:tffAtomTyping t:tffWS
         { return a }
-    / l:tffLogicFormula
+    / l:tffLogicFormula tffWS
         { return l }
-    / s:tffSubtype
+    / tffWS s:tffSubtype tffWS
         { return s }
-    / t:tfxSequent
+    / tffWS t:tfxSequent tffWS
         { return t}
+    / t:tffWS
+        {return t}
 
 tffLogicFormula
     = b:tffBinaryFormula
@@ -451,9 +453,9 @@ tffLogicFormula
     / un:tffUnaryFormula
         { return un }
     / d:tffDefinedInfix
-                      { return d}
+         { return d}
     /  u:tffUnitaryFormula
-                           { return u}
+        { return u}
 
 tffUnitaryFormula
     = q:tffQuantifiedFormula
@@ -531,14 +533,15 @@ unaryConnective
 tffUnitaryTerm
     =  "(" WS l:tffLogicFormula  ")" WS
         {return l}
+     / a:tffAtomicFormula
+             {return a}
      / d:definedTerm
         {return d}
      / t:tfxTuple
         {return t}
      / v:variable
         {return v}
-     / a:tffAtomicFormula
-        {return a}
+
 
 infixInequality
     = "!=" WS
@@ -626,8 +629,8 @@ tffBinaryAssoc
               {return o;}
 
 tffDefinedInfix
-    = u:tffUnitaryTerm  i:definedInfixPred  t:tffUnitaryTerm
-        {return i(u, t); }
+    = u:tffUnitaryTerm "=" WS  t:tffUnitaryTerm
+        {return factories.equalityAtom(u, t, ee); }
 
 tffAndFormula
     = leftmost:tffUnitFormula
