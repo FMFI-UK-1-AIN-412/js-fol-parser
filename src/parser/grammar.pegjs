@@ -473,14 +473,14 @@ tfxUnitaryFormula
 
 tffQuantifiedFormula
     =  q:fofQuantifier "[" WS v:tffVariableList "]" WS ":" WS u:tffUnitFormula
-        { return q(v, u) ;}
+        { return q(v.variable, v.type, u, ee) ;}
 
 fofQuantifier
    = "?" WS
-     {return (v, f) => factories.existentialQuant(v, f, ee)}
+     {return (v,t, f) => factories.existentialQuant(v, t, f, ee)}
 
    / "!" WS
-     {return (v, f) => factories.universalQuant(v, f, ee)}
+     {return (v,t, f) => factories.universalQuant(v, t, f, ee)}
 
 tffVariableList
     = v:tffVariable "," WS l:tffVariableList
@@ -500,8 +500,8 @@ variable
         {return factories.variable(a, ee)}
 
 tffTypedVariable
-    =  v:variable ":" WS tffAtomicType
-    { return v}
+    =  v:variable ":" WS t:tffAtomicType
+    { return {variable: v, type: t}}
 
 tffUnitFormula
     = d:tffDefinedInfix
@@ -527,7 +527,7 @@ tffInfixUnary
 
 unaryConnective
     = "~" WS
-        {return (t1,t2) => factories.negation(t1,t2,ee)}
+        {return t1 => factories.negation(t1,ee)}
 
 
 tffUnitaryTerm
@@ -629,7 +629,10 @@ tffBinaryAssoc
               {return o;}
 
 tffDefinedInfix
-    = u:tffUnitaryTerm "=" WS  t:tffUnitaryTerm
+    = f:functor "("  WS  a:tffArguments ")" WS "=" WS c:constant
+        {return factories.functionApplication(f, [a, c])}
+
+    /u:tffUnitaryTerm "=" WS  t:tffUnitaryTerm
         {return factories.equalityAtom(u, t, ee); }
 
 tffAndFormula
@@ -671,6 +674,7 @@ tffAtomicType
     / "(" WS a:tffAtomicType ")" WS
 
     / d:definedType
+    {return d}
 
     / t:typeConstant
 
@@ -713,6 +717,7 @@ atomicWord
 
 definedType
     =  "$" l:lowerWord
+    {return l}
 
 typeConstant
     = t:typeFunctor
