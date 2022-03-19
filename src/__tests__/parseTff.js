@@ -5,7 +5,10 @@ import {parseTff} from '../index.js'
 import factories from './helpers/factories'
 import startRules from "../parser/startRules";
 const application = (sym, args, _) => `${sym}(${args.join(',')})`
-const factoriesWoLanguage = {...factories, functionApplication: application, predicateAtom: application}
+const universal = (v, type, f, _) => `∀${v} ${type} ${f}`
+const exist = (v, type, f, _) => `∀${v} ${type} ${f}`
+const factoriesWoLanguage = {...factories, functionApplication: application, predicateAtom: application,
+                                universalQuant: universal, existentialQuant:exist}
 const parse = (str, fs = factoriesWoLanguage) =>
     parseTff(str, fs)
 
@@ -22,7 +25,7 @@ describe('tff', () => {
   test('quantifiedOr', () => {
     expect(parse('tff(finite_domain,axiom, ! [X:$i] : (X=jozko|X=fmb_i2' +
         ') ).')).toEqual(
-        {name:'finite_domain', type:'axiom', formula: factoriesWoLanguage.universalQuant(factoriesWoLanguage.variable("X"), factoriesWoLanguage.disjunction(
+        {name:'finite_domain', type:'axiom', formula: factoriesWoLanguage.universalQuant(factoriesWoLanguage.variable("X"), "i", factoriesWoLanguage.disjunction(
               factoriesWoLanguage.equalityAtom(factoriesWoLanguage.constant("X"), factoriesWoLanguage.constant("jozko")),
               factoriesWoLanguage.equalityAtom(factoriesWoLanguage.constant("X"), factoriesWoLanguage.constant("fmb_i2"))))}
 
@@ -93,7 +96,7 @@ describe('tff', () => {
             '      ) ).')).toEqual(
             {
                 name: 'finite_domain', type: 'axiom', formula:
-                    factoriesWoLanguage.universalQuant(factoriesWoLanguage.variable("X"),
+                    factoriesWoLanguage.universalQuant(factoriesWoLanguage.variable("X"), "i",
                         factoriesWoLanguage.disjunction(
                             factoriesWoLanguage.disjunction(
                                 factoriesWoLanguage.disjunction(
