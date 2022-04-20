@@ -32,6 +32,20 @@ export const parseClause = (input, language, factories) =>
     factories
   })
 
+export const parseITerm = (input, language, factories) =>
+  parse(input, {
+    startRule: startRules.ITerm,
+    language,
+    factories
+  })
+
+export const parseIClause = (input, language, factories) =>
+  parse(input, {
+    startRule: startRules.IClause,
+    language,
+    factories
+  })
+
 export const parseConstants = (input) =>
   parse(input, {
     startRule: startRules.Constants,

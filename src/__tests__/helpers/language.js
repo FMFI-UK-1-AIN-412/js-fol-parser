@@ -32,3 +32,7 @@ export default {
   isPredicate,
   isVariable
 }
+
+export const iLanguage = {
+  isConstant
+}

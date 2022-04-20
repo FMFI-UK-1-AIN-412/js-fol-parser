@@ -201,6 +201,81 @@ PredicateSymbol
     = $ (i:Identifier & { return language.isPredicate(i) })
 
 
+// ## FIRST-ORDER SYNTAX WITH AN INFERRED LANGUAGE
+
+// When no a-priori language is given, parsing requires non-constant
+// look-ahead to distinguish predicate and equality atoms. That will require
+// exponential time in the worst case.
+
+
+// ### Terms
+
+ITerm
+    = WS t:ITermCases WS { return t }
+
+ITermCases
+    = f:IFunctionSymbol WS "(" ts:ITerms ")"
+        { return factories.functionApplication(f, ts, ee) }
+    / c:ConstantSymbol
+        { return factories.constant(c, ee) }
+    / v:IVariableSymbol
+        { return factories.variable(v, ee) }
+
+ITerms
+    = t:ITerm ts:("," t1:ITerm { return t1 })*
+        { return [t].concat(ts) }
+
+
+// ### Predicate atoms
+
+IPredicateAtom
+    = p:IPredicateSymbol WS "(" ts:ITerms ")"
+        { return { predicate: p, arguments: ts } }
+
+// ### Literals and clauses
+
+ILiteral
+    = NegationSymbol WS a:IPredicateAtom
+        { return factories.literal(true, a.predicate, a.arguments, ee) }
+    / a:IPredicateAtom
+        { return factories.literal(false, a.predicate, a.arguments, ee) }
+
+IClause
+    = WS EmptyClause WS
+        { return factories.clause([], ee) }
+    / WS lits:IClauseLiterals WS
+        { return factories.clause(lits, ee) }
+
+IClauseLiterals
+    = leftmost:IPrimaryClause
+        rights:(
+            WS (DisjunctionSymbol / ",") WS right:IPrimaryClause
+                { return right }
+        )*
+        { return [leftmost,...rights].flat() }
+
+IPrimaryClause
+    = lit:ILiteral
+        { return [lit] }
+    / "(" lits:IClauseLiterals ")"
+        { return lits }
+
+
+// ## CONTEXT-INFERRED NON-LOGICAL SYMBOLS
+
+IVariableSymbol
+    "variable symbol"
+    = $ (i:Identifier ! { return language.isConstant(i) })
+
+IFunctionSymbol
+    "function symbol"
+    = $ (i:Identifier ! { return language.isConstant(i) })
+
+IPredicateSymbol
+    "predicate symbol"
+    = $ (i:Identifier ! { return language.isConstant(i) })
+
+
 // ## LOGICAL SYMBOLS
 
 EqualitySymbol
@@ -365,6 +440,20 @@ SubstitutionPair
     = "(" WS v:VariableSymbol WS "," WS t:Term WS ")"
         { return [v, t] }
     / v:VariableSymbol WS MapsTo WS t:Term
+        { return [v, t] }
+
+
+// ### Substitution with an inferred language
+
+ISubstitution
+    = WS p1:ISubstitutionPair
+        ps:(WS "," WS pi:ISubstitutionPair {return pi})* WS
+        { return [p1, ...ps] }
+
+ISubstitutionPair
+    = "(" WS v:VariableSymbol WS "," WS t:ITerm WS ")"
+        { return [v, t] }
+    / v:VariableSymbol WS MapsTo WS t:ITerm
         { return [v, t] }
 
 

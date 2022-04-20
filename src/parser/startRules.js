@@ -6,6 +6,10 @@ const FormulaWithPrecedence = 'FormulaWithPrecedence';
 
 const Clause = 'Clause';
 
+const ITerm = 'ITerm';
+
+const IClause = 'IClause';
+
 const Constants = 'Constants';
 
 const Predicates = 'Predicates';
@@ -20,11 +24,15 @@ const Valuation = 'Valuation';
 
 const Substitution = 'Substitution';
 
+const ISubstitution = 'ISubstitution';
+
 module.exports = {
   Term,
   FormulaStrict,
   FormulaWithPrecedence,
   Clause,
+  ITerm,
+  IClause,
   Constants,
   Predicates,
   Functions,
@@ -32,11 +40,14 @@ module.exports = {
   Tuples,
   Valuation,
   Substitution,
+  ISubstitution,
   'default': [
     Term,
     FormulaStrict,
     FormulaWithPrecedence,
     Clause,
+    ITerm,
+    IClause,
     Constants,
     Predicates,
     Functions,
@@ -44,5 +55,6 @@ module.exports = {
     Tuples,
     Valuation,
     Substitution,
+    ISubstitution
   ]
 }
