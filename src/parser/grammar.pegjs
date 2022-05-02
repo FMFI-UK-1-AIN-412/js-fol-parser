@@ -436,7 +436,7 @@ tffWS
 
 
 tffFormula
-    = a:tffAtomTyping t:tffWS
+    =  a:tffAtomTyping tffWS
         { return a }
     / l:tffLogicFormula tffWS
         { return l }
@@ -638,7 +638,7 @@ tffDefinedInfix
 tffAndFormula
     = leftmost:tffUnitFormula
                         rights:(
-                            "&" WS right:tffUnitFormula
+                             tffWS WS "&" WS right:tffUnitFormula
                                 { return right }
                         )+
                         {
@@ -652,7 +652,7 @@ tffAndFormula
 tffOrFormula
     = leftmost:tffUnitFormula
                     rights:(
-                        "|" WS right:tffUnitFormula
+                        tffWS WS "|" WS right:tffUnitFormula
                             { return right }
                     )+
                     {
