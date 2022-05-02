@@ -219,4 +219,41 @@ describe('tff', () => {
             },
         );
     });
-});
+    test('comments', () => {
+        let a = `tff(predicate_p7,axiom,\n` +
+             `          p7('fmb_$i_1','fmb_$i_1','fmb_$i_1')\n` +
+             `%         p7('fmb_$i_1','fmb_$i_4','fmb_$i_4') undefined in model\n` +
+            `         & p7('fmb_$i_2','fmb_$i_1','fmb_$i_1')` +
+            `).`
+         expect(parse(a)).toEqual(
+             {name:'predicate_p7', type:'axiom', formula:  factoriesWoLanguage.conjunction(factoriesWoLanguage.predicateAtom("p7", [factories.constant('fmb_$i_1'), factories.constant('fmb_$i_1'), factories.constant('fmb_$i_1')]),
+                         factoriesWoLanguage.predicateAtom("p7", [factories.constant('fmb_$i_2'), factories.constant('fmb_$i_1'), factories.constant('fmb_$i_1')])
+                         )
+                 },
+         );
+
+        let b = `tff(predicate_p7,axiom,\n` +
+             `          p7('fmb_$i_1','fmb_$i_1','fmb_$i_1')\n` +
+             `         & p7('fmb_$i_2','fmb_$i_1','fmb_$i_1')\n` +
+             `%         p7('fmb_$i_1','fmb_$i_4','fmb_$i_4') undefined in model\n` +
+            `).` 
+         expect(parse(b)).toEqual(
+             {name:'predicate_p7', type:'axiom', formula:  factoriesWoLanguage.conjunction(factoriesWoLanguage.predicateAtom("p7", [factories.constant('fmb_$i_1'), factories.constant('fmb_$i_1'), factories.constant('fmb_$i_1')]),
+                         factoriesWoLanguage.predicateAtom("p7", [factories.constant('fmb_$i_2'), factories.constant('fmb_$i_1'), factories.constant('fmb_$i_1')])
+                         )
+                 },
+         );
+
+        let c = `tff(predicate_p7,axiom,\n` +
+             `%         p7('fmb_$i_1','fmb_$i_4','fmb_$i_4') undefined in model\n` +
+             `          p7('fmb_$i_1','fmb_$i_1','fmb_$i_1')\n` +
+             `        & p7('fmb_$i_2','fmb_$i_1','fmb_$i_1')\n` +
+            `).`
+         expect(parse(c)).toEqual(
+             {name:'predicate_p7', type:'axiom', formula:  factoriesWoLanguage.conjunction(factoriesWoLanguage.predicateAtom("p7", [factories.constant('fmb_$i_1'), factories.constant('fmb_$i_1'), factories.constant('fmb_$i_1')]),
+                         factoriesWoLanguage.predicateAtom("p7", [factories.constant('fmb_$i_2'), factories.constant('fmb_$i_1'), factories.constant('fmb_$i_1')])
+                         )
+                 },
+         );
+     });
+ });
