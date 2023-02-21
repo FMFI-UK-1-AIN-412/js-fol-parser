@@ -114,7 +114,7 @@ describe('shallow formula parsing with precedence', () => {
     {
       con: '↔︎',
       symbols: [
-        '↔︎', '⟷', '⇔', '⟺', '≡',
+        '↔︎', '↔', '⟷', '⇔', '⟺', '≡',
         '<->', '<-->', '<=>', '<==>', '===',
         '\\lequiv ', '\\leftrightarrow ', '\\equivalent ', '\\equiv '
       ]

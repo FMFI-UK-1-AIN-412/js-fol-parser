@@ -250,7 +250,7 @@ ImplicationSymbol
 
 EquivalenceSymbol
     "equivalence symbol"
-    = "↔︎" / "⟷" / "⇔" / "⟺" / "≡"
+    = "↔︎" / "↔" / "⟷" / "⇔" / "⟺" / "≡"
     / "<->" / "<-->" / "<=>" / "<==>" / "==="
     / "\\lequiv" ! IdentifierPart
     / "\\leftrightarrow" ! IdentifierPart
