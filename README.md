@@ -332,6 +332,7 @@ The alternatives are listed below directly in the PEGjs syntax.
 EqualitySymbol
     "equality symbol"
     = "="
+    / "≐"
 
 ConjunctionSymbol
     "conjunction symbol"
@@ -362,7 +363,7 @@ ImplicationSymbol
 
 EquivalenceSymbol
     "equivalence symbol"
-    = "↔︎" / "⟷" / "⇔" / "⟺" / "≡"
+    = "↔︎" / "↔" / "⟷" / "⇔" / "⟺" / "≡"
     / "<->" / "<-->" / "<=>" / "<==>" / "==="
     / "\\lequiv" ! IdentifierPart
     / "\\leftrightarrow" ! IdentifierPart
