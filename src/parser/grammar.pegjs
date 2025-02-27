@@ -218,8 +218,9 @@ PredicateSymbol
 
 EqualitySymbol
     "equality symbol"
-    = "="
-    / "≐"
+    = "=="
+    / "≐" 
+    / "="
 
 ConjunctionSymbol
     "conjunction symbol"
@@ -413,14 +414,14 @@ MapsTo
     / "\\mapsto" ! IdentifierPart
 
 
-// ## TPTP syntax
+// ## TPTP syntax - v9.0.0.9
 
 tff = WS "tff(" WS n:name "," WS r:formulaRole "," WS  f:tffFormula WS ")." WS
         { return {name:n, type:r, formula:f }; }
 
 name
-    = i:Identifier
-        { return i; }
+    = atomicWord
+    / integer
 
 formulaRole
     = "axiom"
@@ -579,17 +580,33 @@ definedTerm
         {return factories.constant(a, ee)}
 
     / d:distinctObject
+        {return factories.constant(d, ee)}
 
 distinctObject
-    = q1:doubleQuote d:doChar "*" WS q2:doubleQuote WS
-       {return factories.constant("null", ee)}
+    = doubleQuote d:(doChar*) doubleQuote WS
+       {return `"${d.join('')}"`}
 
 doChar
-    = '(' WS [\u0020-\u0021 \u0023-\u005B \u005D-\u007E] '|' [\\]["\\] ')' WS
+    = [\\] c:["\\]
+        {return c;}
+
+    / [\u0020-\u0021\u0023-\u005B\u005D-\u007E]
 
 doubleQuote
     = '"'
 
+singleQuoted
+    = singleQuote d:(sqChar+) singleQuote WS
+      {return d.join('')}
+
+sqChar
+    = [\\]c:['\\]
+      {return c}
+    
+    / [\u0020-\u0026\u0030-\u005B\u005D-\u007E] 
+
+singleQuote
+    = "'"
 
 tffBinaryFormula
     = a:tffBinaryAssoc
@@ -710,10 +727,9 @@ typeFunctor
     = a:atomicWord
 
 atomicWord
-    = l:lowerWord
-        { return l}
+    = lowerWord
 
-    / d:distinctObject
+    / singleQuoted
 
 definedType
     =  "$" l:lowerWord
@@ -867,9 +883,62 @@ atomicSystemWord
     =  "$" "$"  l:lowerWord WS
          {return  factories.constant(l, ee)}
 
+integer
+    = $ signed_integer
+    / $ unsigned_integer
+
+signed_integer
+    = $ sign unsigned_integer
+
+unsigned_integer
+    = $ zero_numeric
+    / $ positive_integer
+
+positive_integer
+    = $ non_zero_numeric numeric*
+
+integer_digits
+    = $ numeric+
+
 lowerWord
-    =  a:$[a-zA-Z0-9_$]* WS
+    =  a:($ lower_alpha alpha_numeric*) WS
         {return a}
+
+sign
+    = [+-]
+
+dot
+    = [.]
+
+exponent
+    = [Ee]
+
+slash_char
+    = [/]
+
+slosh_char
+    = [\\]
+
+zero_numeric
+    = [0]
+
+non_zero_numeric
+    = [1-9]
+
+numeric
+    = [0-9]
+
+lower_alpha
+    = [a-z]
+
+upper_alpha
+    = [A-Z]
+
+underscore
+    = [_]
+
+alpha_numeric
+    = lower_alpha / upper_alpha / numeric / underscore
 
 definedFunctor
     =  "$"  l:lowerWord WS
