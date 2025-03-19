@@ -565,6 +565,7 @@ tfxTuple
 tffArguments
     = t1:tffTerm ts:("," WS ti:tffTerm { return ti })*
               { return [t1].concat(ts) }
+              
 tffTerm
     = d:definedTerm
               {return d}
@@ -576,7 +577,7 @@ tffTerm
         {return t}
 
 definedTerm
-    = a:$[a-zA-Z0-9_$]* WS
+    = a:($ number) WS
         {return factories.constant(a, ee)}
 
     / d:distinctObject
@@ -883,6 +884,36 @@ atomicSystemWord
     =  "$" "$"  l:lowerWord WS
          {return  factories.constant(l, ee)}
 
+number
+    = integer
+    / rational
+    / real
+
+real
+    = signed_real
+    / unsigned_real
+signed_real
+    = sign unsigned_real 
+unsigned_real
+    = decimal_fraction
+    / decimal_exponent
+decimal_exponent
+    = (integer_digits / decimal_fraction) exponent exp_integer 
+decimal_fraction
+    = unsigned_integer dot integer_digits 
+exp_integer
+    = signed_exp_integer
+    / integer_digits
+signed_exp_integer
+    = sign integer_digits 
+rational
+    = signed_rational
+    / unsigned_rational
+signed_rational
+    = sign unsigned_rational 
+unsigned_rational
+    = unsigned_integer slash positive_integer 
+
 integer
     = $ signed_integer
     / $ unsigned_integer
@@ -900,8 +931,10 @@ positive_integer
 integer_digits
     = $ numeric+
 
+slash = '/'
+
 lowerWord
-    =  a:($ lower_alpha alpha_numeric*) WS
+    =  a:($ (lower_alpha alpha_numeric*)) WS
         {return a}
 
 sign
