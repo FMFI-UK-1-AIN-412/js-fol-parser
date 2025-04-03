@@ -430,7 +430,7 @@ formulaRole
         { return "type"; }
 
 tffWS
-    = ('%' WS [\u0020-\u007E]* [\t\n\r\v\f]+)+
+    = (WS '%' WS [\t\u0020-\u007E]* [\n\r\v\f]+)+ WS
         {return "comment"}
 
     / WS
@@ -461,7 +461,7 @@ tffLogicFormula
 tffUnitaryFormula
     = q:tffQuantifiedFormula
                     { return q}
-    /  "(" WS l:tffLogicFormula ")" WS
+    /  "(" WS l:tffLogicFormula ")" tffWS
                          { return l}
     /a:tffAtomicFormula
                    { return a }
@@ -469,7 +469,7 @@ tffUnitaryFormula
               { return u }
 
 tfxUnitaryFormula
-    =  v:variable WS
+    =  v:variable tffWS
     {return v}
 
 tffQuantifiedFormula
@@ -505,11 +505,11 @@ tffTypedVariable
     { return {variable: v, type: t}}
 
 tffUnitFormula
-    = d:tffDefinedInfix
+    = d:tffDefinedInfix tffWS
              {return d}
-    / t:tffUnaryFormula
+    / t:tffUnaryFormula tffWS
         {return t}
-    / u:tffUnitaryFormula
+    / u:tffUnitaryFormula tffWS
               {return u}
 
 tffUnaryFormula
@@ -610,10 +610,10 @@ singleQuote
     = "'"
 
 tffBinaryFormula
-    = a:tffBinaryAssoc
+    = a:tffBinaryAssoc tffWS
               {return a}
 
-    / n:tffBinaryNonassoc
+    / n:tffBinaryNonassoc tffWS
                {return n }
 
 tffBinaryNonassoc
@@ -621,22 +621,22 @@ tffBinaryNonassoc
         {return c(u,v,ee)}
 
 nonassocConnective
-    = "<=>" WS
+    = "<=>" tffWS
         {return (t1,t2) => factories.equivalence(t1,t2,ee)}
 
-    / "=>" WS
+    / "=>" tffWS
         {return (t1,t2) => factories.implication(t1,t2,ee)}
 
-    / "<=" WS
+    / "<=" tffWS
         {return (t1,t2) => factories.implication(t2,t1,ee)}
 
-    / "<~>" WS
+    / "<~>" tffWS
         {return (t1,t2) => factories.negation(factories.equivalence(t1,t2,ee), ee)}
 
-    / "~|" WS
+    / "~|" tffWS
             {return (t1,t2) => factories.negation(factories.disjunction(t1,t2,ee), ee)}
 
-    / "~&" WS
+    / "~&" tffWS
         {return (t1,t2) => factories.negation(factories.conjunction(t1,t2,ee), ee)}
 
 tffBinaryAssoc
@@ -656,7 +656,7 @@ tffDefinedInfix
 tffAndFormula
     = leftmost:tffUnitFormula
                         rights:(
-                            "&" WS right:tffUnitFormula
+                            "&" tffWS right:tffUnitFormula
                                 { return right }
                         )+
                         {
@@ -670,7 +670,7 @@ tffAndFormula
 tffOrFormula
     = leftmost:tffUnitFormula
                     rights:(
-                        "|" WS right:tffUnitFormula
+                        "|" tffWS right:tffUnitFormula
                             { return right }
                     )+
                     {
@@ -778,10 +778,10 @@ tffAtomicFormula
         {return s}
 
 tffPlainAtomic
-    = f:functor "("  WS  a:tffArguments ")" WS
+    = f:functor "("  WS  a:tffArguments ")" tffWS
              {return factories.predicateAtom(f, a, ee)}
 
-    / c:constant
+    / c:constant tffWS
               {return c}
 
 functor
@@ -789,14 +789,14 @@ functor
         { return a}
 
 tffDefinedAtomic
-    = d:tffDefinedPlain
+    = d:tffDefinedPlain tffWS
         {return d}
 
 tffDefinedPlain
     = d:definedConstant
         {return d}
 
-    / f:definedFunctor "(" WS a:tffArguments ")" WS
+    / f:definedFunctor "(" WS a:tffArguments ")"
         {return factories.predicateAtom(f, a, ee) }
 
     / c:tfxConditional
@@ -806,17 +806,17 @@ tffDefinedPlain
         {return l}
 
 tffSystemAtomic
-    = c:systemConstant
+    = c:systemConstant tffWS
         {return c}
 
-    / f:systemFunctor "(" WS a:tffArguments ")" WS
+    / f:systemFunctor "(" WS a:tffArguments ")" tffWS
         {return factories.predicateAtom(f, a, ee) }
 
 tfxConditional
-    = "$ite" WS "(" WS l:tffLogicFormula "," WS t1:tffTerm "," WS t2:tffTerm ")" WS
+    = "$ite" WS "(" WS l:tffLogicFormula "," WS t1:tffTerm "," WS t2:tffTerm ")" tffWS
 
 tfxLet
-    = "$let" WS "(" WS t:tfxLetTypes "," WS d:tfxLetDefns "," WS t2:tffTerm ")" WS
+    = "$let" WS "(" WS t:tfxLetTypes "," WS d:tfxLetDefns "," WS t2:tffTerm ")" tffWS
 
 
 tfxLetTypes
