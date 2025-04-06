@@ -416,7 +416,7 @@ MapsTo
 
 // ## TPTP syntax - v9.0.0.9
 
-tff = WS "tff(" WS n:name "," WS r:formulaRole "," WS  f:tffFormula WS ")." WS
+tff = WS "tff(" tffWS n:name "," tffWS r:formulaRole "," tffWS  f:tffFormula WS ")." WS
         { return {name:n, type:r, formula:f }; }
 
 name
