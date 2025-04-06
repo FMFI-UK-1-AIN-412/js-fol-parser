@@ -15,7 +15,7 @@ const parse = (str, fs = factoriesWoLanguage) =>
 
 describe('tff', () => {
   test('constant', () => {
-    expect(parse('tff(declare_$i1,type,jozko:$i).')).toEqual(
+    expect(parse(`tff('declare_$i1',type,jozko:$i).`)).toEqual(
 
           {name:'declare_$i1', type:'type', formula: {
               "atom": factoriesWoLanguage.constant('jozko'), "kind": "atom typing", "type": "$i"
@@ -26,8 +26,8 @@ describe('tff', () => {
     expect(parse('tff(finite_domain,axiom, ! [X:$i] : (X=jozko|X=fmb_i2' +
         ') ).')).toEqual(
         {name:'finite_domain', type:'axiom', formula: factoriesWoLanguage.universalQuant(factoriesWoLanguage.variable("X"), "i", factoriesWoLanguage.disjunction(
-              factoriesWoLanguage.equalityAtom(factoriesWoLanguage.constant("X"), factoriesWoLanguage.constant("jozko")),
-              factoriesWoLanguage.equalityAtom(factoriesWoLanguage.constant("X"), factoriesWoLanguage.constant("fmb_i2"))))}
+              factoriesWoLanguage.equalityAtom(factoriesWoLanguage.variable("X"), factoriesWoLanguage.constant("jozko")),
+              factoriesWoLanguage.equalityAtom(factoriesWoLanguage.variable("X"), factoriesWoLanguage.constant("fmb_i2"))))}
 
     );
   });
@@ -40,7 +40,7 @@ describe('tff', () => {
   test('andStudent', () => {
     expect(parse('tff(predicate_student,axiom,\n' +
         'student(jozko)' +
-        '& ~student(fmb_$i_2)' +
+        `& ~student('fmb_$i_2')` +
 
         ').')).toEqual(
         {name:'predicate_student', type:'axiom', formula:factoriesWoLanguage.conjunction(factoriesWoLanguage.predicateAtom("student", [factories.constant('jozko')]), factoriesWoLanguage.negation(factoriesWoLanguage.predicateAtom("student", [factories.constant("fmb_$i_2")])))},
@@ -55,9 +55,9 @@ describe('tff', () => {
   });
   test('andHodnotenie', () => {
     expect(parse('tff(predicate_hodnotenie,axiom,' +
-        '~hodnotenie(jozko, jozko) & hodnotenie(jozko, fmb_$i_2)' +
-        '& ~hodnotenie(fmb_$i_2, jozko)' +
-        '& ~hodnotenie(fmb_$i_2, fmb_$i_2)' +
+        '~hodnotenie(jozko, jozko) & hodnotenie(jozko, \'fmb_$i_2\')' +
+        '& ~hodnotenie(\'fmb_$i_2\', jozko)' +
+        '& ~hodnotenie(\'fmb_$i_2\', \'fmb_$i_2\')' +
          ').')).toEqual(
         {name:'predicate_hodnotenie', type:'axiom', formula:
           factoriesWoLanguage.conjunction(
@@ -81,7 +81,7 @@ describe('tff', () => {
     );
   });
     test('structureOfFourElements', () => {
-        expect(parse('tff(declare_$i2,type,petra:$i).')).toEqual(
+        expect(parse(`tff('declare_$i2',type,petra:$i).`)).toEqual(
             {name:'declare_$i2', type:'type', formula:
                     {
                         "atom": factoriesWoLanguage.constant('petra'),
@@ -100,12 +100,12 @@ describe('tff', () => {
                         factoriesWoLanguage.disjunction(
                             factoriesWoLanguage.disjunction(
                                 factoriesWoLanguage.disjunction(
-                                    factoriesWoLanguage.equalityAtom(factoriesWoLanguage.constant("X"), factoriesWoLanguage.constant("jozko")),
-                                    factoriesWoLanguage.equalityAtom(factoriesWoLanguage.constant("X"), factoriesWoLanguage.constant("petra"))
+                                    factoriesWoLanguage.equalityAtom(factoriesWoLanguage.variable("X"), factoriesWoLanguage.constant("jozko")),
+                                    factoriesWoLanguage.equalityAtom(factoriesWoLanguage.variable("X"), factoriesWoLanguage.constant("petra"))
                                 ),
-                                factoriesWoLanguage.equalityAtom(factoriesWoLanguage.constant("X"), factoriesWoLanguage.constant("hanka"))
+                                factoriesWoLanguage.equalityAtom(factoriesWoLanguage.variable("X"), factoriesWoLanguage.constant("hanka"))
                             ),
-                            factoriesWoLanguage.equalityAtom(factoriesWoLanguage.constant("X"), factoriesWoLanguage.constant("katka"))
+                            factoriesWoLanguage.equalityAtom(factoriesWoLanguage.variable("X"), factoriesWoLanguage.constant("katka"))
                         )
                     )
             }
@@ -209,4 +209,51 @@ describe('tff', () => {
 
 
     });
-});
+    test('predicate with atomic definition', () => {
+        expect(parse(`tff(predicate_p1,axiom,
+                          p1('fmb_$i_1')
+
+                       ).`)).toEqual(
+            {name:'predicate_p1', type:'axiom', formula:
+                    factoriesWoLanguage.predicateAtom("p1", [factoriesWoLanguage.constant('fmb_$i_1')])
+            },
+        );
+    });
+    test('comments', () => {
+        let a = `tff(predicate_p7,axiom,\n` +
+             `          p7('fmb_$i_1','fmb_$i_1','fmb_$i_1')\n` +
+             `%         p7('fmb_$i_1','fmb_$i_4','fmb_$i_4') undefined in model\n` +
+            `         & p7('fmb_$i_2','fmb_$i_1','fmb_$i_1')` +
+            `).`
+         expect(parse(a)).toEqual(
+             {name:'predicate_p7', type:'axiom', formula:  factoriesWoLanguage.conjunction(factoriesWoLanguage.predicateAtom("p7", [factories.constant('fmb_$i_1'), factories.constant('fmb_$i_1'), factories.constant('fmb_$i_1')]),
+                         factoriesWoLanguage.predicateAtom("p7", [factories.constant('fmb_$i_2'), factories.constant('fmb_$i_1'), factories.constant('fmb_$i_1')])
+                         )
+                 },
+         );
+
+        let b = `tff(predicate_p7,axiom,\n` +
+             `          p7('fmb_$i_1','fmb_$i_1','fmb_$i_1')\n` +
+             `         & p7('fmb_$i_2','fmb_$i_1','fmb_$i_1')\n` +
+             `%         p7('fmb_$i_1','fmb_$i_4','fmb_$i_4') undefined in model\n` +
+            `).` 
+         expect(parse(b)).toEqual(
+             {name:'predicate_p7', type:'axiom', formula:  factoriesWoLanguage.conjunction(factoriesWoLanguage.predicateAtom("p7", [factories.constant('fmb_$i_1'), factories.constant('fmb_$i_1'), factories.constant('fmb_$i_1')]),
+                         factoriesWoLanguage.predicateAtom("p7", [factories.constant('fmb_$i_2'), factories.constant('fmb_$i_1'), factories.constant('fmb_$i_1')])
+                         )
+                 },
+         );
+
+        let c = `tff(predicate_p7,axiom,\n` +
+             `%         p7('fmb_$i_1','fmb_$i_4','fmb_$i_4') undefined in model\n` +
+             `          p7('fmb_$i_1','fmb_$i_1','fmb_$i_1')\n` +
+             `        & p7('fmb_$i_2','fmb_$i_1','fmb_$i_1')\n` +
+            `).`
+         expect(parse(c)).toEqual(
+             {name:'predicate_p7', type:'axiom', formula:  factoriesWoLanguage.conjunction(factoriesWoLanguage.predicateAtom("p7", [factories.constant('fmb_$i_1'), factories.constant('fmb_$i_1'), factories.constant('fmb_$i_1')]),
+                         factoriesWoLanguage.predicateAtom("p7", [factories.constant('fmb_$i_2'), factories.constant('fmb_$i_1'), factories.constant('fmb_$i_1')])
+                         )
+                 },
+         );
+     });
+ });

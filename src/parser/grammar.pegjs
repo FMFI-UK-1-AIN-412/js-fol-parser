@@ -218,8 +218,9 @@ PredicateSymbol
 
 EqualitySymbol
     "equality symbol"
-    = "="
-    / "≐"
+    = "=="
+    / "≐" 
+    / "="
 
 ConjunctionSymbol
     "conjunction symbol"
@@ -413,14 +414,14 @@ MapsTo
     / "\\mapsto" ! IdentifierPart
 
 
-// ## TPTP syntax
+// ## TPTP syntax - v9.0.0.9
 
-tff = WS "tff(" WS n:name "," WS r:formulaRole "," WS  f:tffFormula WS ")." WS
+tff = WS "tff(" tffWS n:name "," tffWS r:formulaRole "," tffWS  f:tffFormula WS ")." WS
         { return {name:n, type:r, formula:f }; }
 
 name
-    = i:Identifier
-        { return i; }
+    = atomicWord
+    / integer
 
 formulaRole
     = "axiom"
@@ -429,7 +430,7 @@ formulaRole
         { return "type"; }
 
 tffWS
-    = ('%' WS [\u0020-\u007E]* [\t\n\r\v\f]+)+
+    = (WS '%' WS [\t\u0020-\u007E]* [\n\r\v\f]+)+ WS
         {return "comment"}
 
     / WS
@@ -460,7 +461,7 @@ tffLogicFormula
 tffUnitaryFormula
     = q:tffQuantifiedFormula
                     { return q}
-    /  "(" WS l:tffLogicFormula ")" WS
+    /  "(" WS l:tffLogicFormula ")" tffWS
                          { return l}
     /a:tffAtomicFormula
                    { return a }
@@ -468,7 +469,7 @@ tffUnitaryFormula
               { return u }
 
 tfxUnitaryFormula
-    =  v:variable WS
+    =  v:variable tffWS
     {return v}
 
 tffQuantifiedFormula
@@ -504,11 +505,11 @@ tffTypedVariable
     { return {variable: v, type: t}}
 
 tffUnitFormula
-    = d:tffDefinedInfix
+    = d:tffDefinedInfix tffWS
              {return d}
-    / t:tffUnaryFormula
+    / t:tffUnaryFormula tffWS
         {return t}
-    / u:tffUnitaryFormula
+    / u:tffUnitaryFormula tffWS
               {return u}
 
 tffUnaryFormula
@@ -564,6 +565,7 @@ tfxTuple
 tffArguments
     = t1:tffTerm ts:("," WS ti:tffTerm { return ti })*
               { return [t1].concat(ts) }
+              
 tffTerm
     = d:definedTerm
               {return d}
@@ -575,27 +577,43 @@ tffTerm
         {return t}
 
 definedTerm
-    = a:$[a-zA-Z0-9_$]* WS
+    = a:($ number) WS
         {return factories.constant(a, ee)}
 
     / d:distinctObject
+        {return factories.constant(d, ee)}
 
 distinctObject
-    = q1:doubleQuote d:doChar "*" WS q2:doubleQuote WS
-       {return factories.constant("null", ee)}
+    = doubleQuote d:(doChar*) doubleQuote WS
+       {return `"${d.join('')}"`}
 
 doChar
-    = '(' WS [\u0020-\u0021 \u0023-\u005B \u005D-\u007E] '|' [\\]["\\] ')' WS
+    = [\\] c:["\\]
+        {return c;}
+
+    / [\u0020-\u0021\u0023-\u005B\u005D-\u007E]
 
 doubleQuote
     = '"'
 
+singleQuoted
+    = singleQuote d:(sqChar+) singleQuote WS
+      {return d.join('')}
+
+sqChar
+    = [\\]c:['\\]
+      {return c}
+    
+    / [\u0020-\u0026\u0030-\u005B\u005D-\u007E] 
+
+singleQuote
+    = "'"
 
 tffBinaryFormula
-    = a:tffBinaryAssoc
+    = a:tffBinaryAssoc tffWS
               {return a}
 
-    / n:tffBinaryNonassoc
+    / n:tffBinaryNonassoc tffWS
                {return n }
 
 tffBinaryNonassoc
@@ -603,22 +621,22 @@ tffBinaryNonassoc
         {return c(u,v,ee)}
 
 nonassocConnective
-    = "<=>" WS
+    = "<=>" tffWS
         {return (t1,t2) => factories.equivalence(t1,t2,ee)}
 
-    / "=>" WS
+    / "=>" tffWS
         {return (t1,t2) => factories.implication(t1,t2,ee)}
 
-    / "<=" WS
+    / "<=" tffWS
         {return (t1,t2) => factories.implication(t2,t1,ee)}
 
-    / "<~>" WS
+    / "<~>" tffWS
         {return (t1,t2) => factories.negation(factories.equivalence(t1,t2,ee), ee)}
 
-    / "~|" WS
+    / "~|" tffWS
             {return (t1,t2) => factories.negation(factories.disjunction(t1,t2,ee), ee)}
 
-    / "~&" WS
+    / "~&" tffWS
         {return (t1,t2) => factories.negation(factories.conjunction(t1,t2,ee), ee)}
 
 tffBinaryAssoc
@@ -638,7 +656,7 @@ tffDefinedInfix
 tffAndFormula
     = leftmost:tffUnitFormula
                         rights:(
-                            "&" WS right:tffUnitFormula
+                            "&" tffWS right:tffUnitFormula
                                 { return right }
                         )+
                         {
@@ -652,7 +670,7 @@ tffAndFormula
 tffOrFormula
     = leftmost:tffUnitFormula
                     rights:(
-                        "|" WS right:tffUnitFormula
+                        "|" tffWS right:tffUnitFormula
                             { return right }
                     )+
                     {
@@ -710,10 +728,9 @@ typeFunctor
     = a:atomicWord
 
 atomicWord
-    = l:lowerWord
-        { return l}
+    = lowerWord
 
-    / d:distinctObject
+    / singleQuoted
 
 definedType
     =  "$" l:lowerWord
@@ -761,10 +778,10 @@ tffAtomicFormula
         {return s}
 
 tffPlainAtomic
-    = f:functor "("  WS  a:tffArguments ")" WS
+    = f:functor "("  WS  a:tffArguments ")" tffWS
              {return factories.predicateAtom(f, a, ee)}
 
-    / c:constant
+    / c:constant tffWS
               {return c}
 
 functor
@@ -772,14 +789,14 @@ functor
         { return a}
 
 tffDefinedAtomic
-    = d:tffDefinedPlain
+    = d:tffDefinedPlain tffWS
         {return d}
 
 tffDefinedPlain
     = d:definedConstant
         {return d}
 
-    / f:definedFunctor "(" WS a:tffArguments ")" WS
+    / f:definedFunctor "(" WS a:tffArguments ")"
         {return factories.predicateAtom(f, a, ee) }
 
     / c:tfxConditional
@@ -789,17 +806,17 @@ tffDefinedPlain
         {return l}
 
 tffSystemAtomic
-    = c:systemConstant
+    = c:systemConstant tffWS
         {return c}
 
-    / f:systemFunctor "(" WS a:tffArguments ")" WS
+    / f:systemFunctor "(" WS a:tffArguments ")" tffWS
         {return factories.predicateAtom(f, a, ee) }
 
 tfxConditional
-    = "$ite" WS "(" WS l:tffLogicFormula "," WS t1:tffTerm "," WS t2:tffTerm ")" WS
+    = "$ite" WS "(" WS l:tffLogicFormula "," WS t1:tffTerm "," WS t2:tffTerm ")" tffWS
 
 tfxLet
-    = "$let" WS "(" WS t:tfxLetTypes "," WS d:tfxLetDefns "," WS t2:tffTerm ")" WS
+    = "$let" WS "(" WS t:tfxLetTypes "," WS d:tfxLetDefns "," WS t2:tffTerm ")" tffWS
 
 
 tfxLetTypes
@@ -867,9 +884,94 @@ atomicSystemWord
     =  "$" "$"  l:lowerWord WS
          {return  factories.constant(l, ee)}
 
+number
+    = integer
+    / rational
+    / real
+
+real
+    = signed_real
+    / unsigned_real
+signed_real
+    = sign unsigned_real 
+unsigned_real
+    = decimal_fraction
+    / decimal_exponent
+decimal_exponent
+    = (integer_digits / decimal_fraction) exponent exp_integer 
+decimal_fraction
+    = unsigned_integer dot integer_digits 
+exp_integer
+    = signed_exp_integer
+    / integer_digits
+signed_exp_integer
+    = sign integer_digits 
+rational
+    = signed_rational
+    / unsigned_rational
+signed_rational
+    = sign unsigned_rational 
+unsigned_rational
+    = unsigned_integer slash positive_integer 
+
+integer
+    = $ signed_integer
+    / $ unsigned_integer
+
+signed_integer
+    = $ sign unsigned_integer
+
+unsigned_integer
+    = $ zero_numeric
+    / $ positive_integer
+
+positive_integer
+    = $ non_zero_numeric numeric*
+
+integer_digits
+    = $ numeric+
+
+slash = '/'
+
 lowerWord
-    =  a:$[a-zA-Z0-9_$]* WS
+    =  a:($ (lower_alpha alpha_numeric*)) WS
         {return a}
+
+sign
+    = [+-]
+
+dot
+    = [.]
+
+exponent
+    = [Ee]
+
+slash_char
+    = [/]
+
+slosh_char
+    = [\\]
+
+zero_numeric
+    = [0]
+
+non_zero_numeric
+    = [1-9]
+
+numeric
+    = [0-9]
+
+lower_alpha
+    = [a-z]
+
+upper_alpha
+    = [A-Z]
+
+underscore
+    = [_]
+
+alpha_numeric
+    = lower_alpha / upper_alpha / numeric / underscore
 
 definedFunctor
     =  "$"  l:lowerWord WS
