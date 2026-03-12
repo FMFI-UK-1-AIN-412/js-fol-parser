@@ -45,7 +45,8 @@
     "build:module": "vite build && cpy src/index.d.ts dist/index.d.ts",
     "build": "npm run build:parser && npm run build:module",
     "lint": "npx kcd-scripts lint",
-    "test": "npx kcd-scripts test"
+    "test": "npx kcd-scripts test",
+    "prepublishOnly": "npm run build && npx kcd-scripts test --all=true --watch=false"
   },
   "devDependencies": {
     "@babel/cli": "^7.13.0",
