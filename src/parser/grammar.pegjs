@@ -50,6 +50,8 @@ QuasiAtom
         { return factories.predicateAtom(pa.predicate, pa.arguments, ee) }
     / p:PredicateSymbol
         { return factories.predicateAtom(p, [], ee) }
+    / cf:ConstantValueFormula
+        { return cf }
 
 EqNeqSymbol
     = EqualitySymbol
@@ -61,6 +63,13 @@ EqNeqSymbol
                     factories.equalityAtom(t1, t2, ee),
                     ee)
         }
+
+ConstantValueFormula
+    "a truth value constant"
+    = AlwaysTrueSymbol
+        { return factories.true(ee) }
+    / AlwaysFalseSymbol
+        { return factories.false(ee) }
 
 
 // ### Formulas – strictly binary and fully parenthesized
@@ -292,6 +301,23 @@ EmptyClause
     / "\\square" ! IdentifierPart
     / "\\Box"  ! IdentifierPart
     / "\\qed" ! IdentifierPart
+
+AlwaysTrueSymbol
+    "the truth constant"
+    = "⊤"
+    / "\\T" ! IdentifierPart
+    / "\\True" ! IdentifierPart
+    / "\\t" ! IdentifierPart
+    / "\\true" ! IdentifierPart
+
+AlwaysFalseSymbol
+    "the falsity constant"
+    = "⊥"
+    / "_|_"
+    / "\\F" ! IdentifierPart
+    / "\\False" ! IdentifierPart
+    / "\\f" ! IdentifierPart
+    / "\\false" ! IdentifierPart
 
 
 // ## LANGUAGE SPECIFICATION

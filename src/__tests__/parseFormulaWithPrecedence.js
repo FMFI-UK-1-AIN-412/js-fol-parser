@@ -61,13 +61,13 @@ describe('atoms', () => {
     expect(() => parse('f(x)'))
       .toThrow(/equality symbol or non-equality symbol but end/);
     expect(() => parse('f(x,)'))
-      .toThrow(/"\(", existential quantifier, negation symbol, predicate symbol, term, or universal quantifier but "f"/);
+      .toThrow(/"\(", a truth value constant, existential quantifier, negation symbol, predicate symbol, term, or universal quantifier but "f"/);
     expect(() => parse('f(,x)'))
-      .toThrow(/"\(", existential quantifier, negation symbol, predicate symbol, term, or universal quantifier but "f"/);
+      .toThrow(/"\(", a truth value constant, existential quantifier, negation symbol, predicate symbol, term, or universal quantifier but "f"/);
     expect(() => parse('G(x,)'))
-      .toThrow(/"\(", existential quantifier, negation symbol, predicate symbol, term, or universal quantifier but "G"/);
+      .toThrow(/"\(", a truth value constant, existential quantifier, negation symbol, predicate symbol, term, or universal quantifier but "G"/);
     expect(() => parse('G(,x)'))
-      .toThrow(/"\(", existential quantifier, negation symbol, predicate symbol, term, or universal quantifier but "G"/);
+      .toThrow(/"\(", a truth value constant, existential quantifier, negation symbol, predicate symbol, term, or universal quantifier but "G"/);
     expect(() => parse('f(x,y)')).toThrow(/1 argument to f but "f\(x,y\)"/);
     expect(() => parse('G(x)')).toThrow(/2 arguments to G/);
     expect(() => parse('aFunction(1,c)')).toThrow(/4 arguments/);
@@ -256,7 +256,9 @@ const idemFactories = {
 
 const atoms = [
   'Q(1,x)',
-  'f(1)=G(c,y)'
+  'f(1)=G(c,y)',
+  '⊤',
+  '⊥'
 ]
 
 const unary = [
@@ -334,4 +336,15 @@ describe('deep fully right-parenthesized formula in DNF', () => {
     expect(parse(`((p(1)&&q(aConstant))∨((p(c)&&q(aConstant))∨((p(c)&&q(aConstant))∨((p(1)&&q(aConstant))∨((p(1)&&q(aConstant))∨((p(c)&&q(aConstant))∨((p(c)&&q(aConstant))∨((p(1)&&q(aConstant))∨((p(1)&&q(aConstant))∨((p(c)&&q(aConstant))∨(((p(c)&&q(aConstant))∨(p(1)&&q(aConstant))))))))))))))`))
       .toBe(`((p(c:1)∧q(c:aConstant))∨((p(c:c)∧q(c:aConstant))∨((p(c:c)∧q(c:aConstant))∨((p(c:1)∧q(c:aConstant))∨((p(c:1)∧q(c:aConstant))∨((p(c:c)∧q(c:aConstant))∨((p(c:c)∧q(c:aConstant))∨((p(c:1)∧q(c:aConstant))∨((p(c:1)∧q(c:aConstant))∨((p(c:c)∧q(c:aConstant))∨((p(c:c)∧q(c:aConstant))∨(p(c:1)∧q(c:aConstant)))))))))))))`);
   });
+})
+
+describe('constant truth value formula parsing', () => {
+    test.each(['⊤', '\\T', '\\True', '\\t', '\\true'])(
+        'always true', (symbol) => {
+        expect(parse(symbol)).toBe(`⊤`);
+    });
+    test.each(['⊥', '_|_', '\\F', '\\False', '\\f', '\\false'])(
+        'always false', (symbol) => {
+        expect(parse(symbol)).toBe(`⊥`);
+    });
 })

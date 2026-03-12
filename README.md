@@ -31,6 +31,8 @@ extends TermFactories<Term> {
     variable: (symbol: string, ee: ErrorExpected) => Term,
     constant: (symbol: string, ee: ErrorExpected) => Term,
     functionApplication: (symbol: string, args: Array<Term>, ee: ErrorExpected) => Term,
+    true: (ee: ErrorExpected) => Formula,
+    false: (ee: ErrorExpected) => Formula,
     predicateAtom: (symbol: string, args: Array<Term>, ee: ErrorExpected) => Formula,
     equalityAtom: (lhs: Term, rhs: Term, ee: ErrorExpected) => Formula,
     negation: (subf: Formula, ee: ErrorExpected) => Formula,
@@ -404,4 +406,21 @@ EmptyClause
     / "\\square" ! IdentifierPart
     / "\\Box"  ! IdentifierPart
     / "\\qed" ! IdentifierPart
+    
+AlwaysTrueSymbol
+    "the truth constant"
+    = "⊤"
+    / "\\T" ! IdentifierPart
+    / "\\True" ! IdentifierPart
+    / "\\t" ! IdentifierPart
+    / "\\true" ! IdentifierPart
+
+AlwaysFalseSymbol
+    "the falsity constant"
+    = "⊥"
+    / "_|_"
+    / "\\F" ! IdentifierPart
+    / "\\False" ! IdentifierPart
+    / "\\f" ! IdentifierPart
+    / "\\false" ! IdentifierPart
 ```

@@ -12,6 +12,8 @@ export default {
   variable: (v, _) => `v:${v}`,
   constant: (c, _) => `c:${c}`,
   functionApplication: applicationWithArityCheck,
+  true: (_) => `⊤`,
+  false: (_) => `⊥`,
   predicateAtom: applicationWithArityCheck,
   equalityAtom: (lhs, rhs, _) => `${lhs}=${rhs}`,
   negation: (f, _) => `¬${f}`,

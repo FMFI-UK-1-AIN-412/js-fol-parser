@@ -45,6 +45,8 @@ declare module "@fmfi-uk-1-ain-412/js-fol-parser" {
         variable: (symbol: string, ee: ErrorExpected) => Term,
         constant: (symbol: string, ee: ErrorExpected) => Term,
         functionApplication: (symbol: string, args: Array<Term>, ee: ErrorExpected) => Term,
+        true: (ee: ErrorExpected) => Formula,
+        false: (ee: ErrorExpected) => Formula,
         predicateAtom: (symbol: string, args: Array<Term>, ee: ErrorExpected) => Formula,
         equalityAtom: (lhs: Term, rhs: Term, ee: ErrorExpected) => Formula,
         negation: (subf: Formula, ee: ErrorExpected) => Formula,
