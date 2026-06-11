@@ -12,6 +12,8 @@ export const Predicates = 'Predicates';
 
 export const Functions = 'Functions';
 
+export const SkolemSymbols = 'SkolemSymbols';
+
 export const Domain = 'Domain';
 
 export const Tuples = 'Tuples';
@@ -30,6 +32,7 @@ export default [
   Constants,
   Predicates,
   Functions,
+  SkolemSymbols,
   Domain,
   Tuples,
   Valuation,

@@ -1,6 +1,6 @@
 {
   "name": "@fmfi-uk-1-ain-412/js-fol-parser",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "A JavaScript parser for first-order logic languages",
   "repository": "https://github.com/FMFI-UK-1-AIN-412/js-fol-parser",
   "files": [
@@ -31,6 +31,10 @@
     {
       "name": "Alena Kuklicová",
       "email": "kuklicova3@uniba.sk"
+    },
+    {
+      "name": "Jakub Šimon Štofanik",
+      "email": "stofanik4@uniba.sk"
     }
   ],
   "maintainers": [

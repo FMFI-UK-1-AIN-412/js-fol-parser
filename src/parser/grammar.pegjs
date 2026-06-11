@@ -346,6 +346,11 @@ FunctionsNE
         fs:(WS "," WS fi:LanguageFunction {return fi})* WS
         { return [f1].concat(fs) }
 
+SkolemSymbols
+    = s1:SkolemSymbol
+        ss:(WS "," WS si:SkolemSymbol {return si})* WS
+        { return [s1].concat(ss) }
+
 PredicateArity
     "arity of the predicate symbol (non-negative integer)"
     = Nat
@@ -366,6 +371,14 @@ LanguageFunction
     "function identifier/positive arity"
     = WS name:Identifier WS "/" WS arity:FunctionArity WS
         { return {name: name, arity: arity} }
+
+SkolemSymbol
+    = LanguageFunction
+    / SkolemConstant
+
+SkolemConstant
+    = WS name:ConstantIdentifier
+        { return {name: name, arity: 0} }
 
 
 // ## STRUCTURE SPECIFICATION

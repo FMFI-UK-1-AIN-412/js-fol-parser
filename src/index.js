@@ -53,6 +53,13 @@ export const parseFunctions = (input) =>
     factories: null
   })
 
+export const parseSkolemSymbols = (input) =>
+    parse(input, {
+        startRule: startRules.SkolemSymbols,
+        language: null,
+        factories: null
+    })
+
 export const parseDomain = (input) =>
   parse(input, {
     startRule: startRules.Domain,

@@ -83,6 +83,8 @@ declare module "@fmfi-uk-1-ain-412/js-fol-parser" {
 
     export function parsePredicates(input: string): Array<SymbolWithArity>;
 
+    export function parseSkolemSymbols(input: string): Array<SymbolWithArity>;
+
     export function parseDomain(input: string): Array<string>;
 
     export function parseTuples(input: string): Array<Array<string>>;
